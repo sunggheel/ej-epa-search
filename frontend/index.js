@@ -9,7 +9,7 @@ const performSearch = async () => {
     let searchQuery = document.getElementById("searchInput").value;
     // Here, you can perform the necessary search operations using the searchQuery
 
-    let response = await fetch(`http://localhost:5000/api/search?query=${searchQuery}`);
+    let response = await fetch(`http://localhost:5000/search?query=${searchQuery}`);
     console.log(response);
 
     displaySearchResults(response);
@@ -24,6 +24,6 @@ const displaySearchResults = (data) => {
 
 }
 
-const buildSearchResults = (data) => {
+const constructSearchResults = (data) => {
 
 }

@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require('fs');
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -18,6 +19,12 @@ app.listen(PORT, () => {
 const db = require("./db");
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
+app.get("/search", (req, res) => {
+    let searchQuery = req.query.query;
+
+
+})
+
 // Serve static frontend app
 app.use(express.static(path.join(__dirname, "frontend/build")));
 
@@ -25,4 +32,3 @@ app.use(express.static(path.join(__dirname, "frontend/build")));
 app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname + "/frontend/index.html"));
 });
-

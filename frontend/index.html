@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Search UI</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search DB</title>
-  <!-- Include Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-</head>
-
-<body>
-  <div class="container">
-    <div class="row">
-      <div class="col-md-6 offset-md-3 mt-5">
-        <h1 class="text-center mb-4">Simple Search UI</h1>
-        <div class="input-group">
-          <input type="text" id="searchInput" class="form-control" placeholder="Enter your search query">
-          <div class="input-group-append">
-            <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+  <body>
+    <div class="mt-4" style="margin-left: 20px;">
+      <input type="file" id="uploadInput" class="form-control-file" accept=".pdf" />
+      <button class="btn btn-primary mt-2" type="button" id="uploadButton">Upload</button>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 offset-md-3 mt-5">
+          <h1 class="text-center mb-4">Simple Search UI</h1>
+          <div class="input-group">
+            <input type="text" id="searchInput" class="form-control" placeholder="Enter your search query" />
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+            </div>
           </div>
+          <div id="searchResults" class="mt-4"></div>
         </div>
-        <div id="searchResults" class="mt-4"></div>
       </div>
     </div>
-  </div>
 
-  <!-- Include Bootstrap JS -->
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-  <!-- Include your custom JavaScript -->
-  <script src="index.js"></script>
-</body>
-
+    <!-- Include Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <!-- Include your custom JavaScript -->
+    <script src="script.js"></script>
+  </body>
 </html>
