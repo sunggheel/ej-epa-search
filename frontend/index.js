@@ -28,6 +28,20 @@ const displaySearchResults = (searchQuery, searchResults) => {
         resultTitle.classList.add("mb-1");
         resultTitle.textContent = result._source.name;
 
+        let buttonGroup = document.createElement("span");
+        buttonGroup.classList.add("btn-group", "btn-group-sm");
+
+        let viewButton = document.createElement("button");
+        viewButton.classList.add("btn", "btn-outline-primary");
+        viewButton.innerHTML = '<i class="bi bi-eye"></i>';
+    
+        let downloadButton = document.createElement("button");
+        downloadButton.classList.add("btn", "btn-outline-primary");
+        downloadButton.innerHTML = '<i class="bi bi-download"></i>';
+
+        buttonGroup.appendChild(viewButton);
+        buttonGroup.appendChild(downloadButton);
+
         let resultText = document.createElement("p");
         resultText.classList.add("mb-1");
 
@@ -36,6 +50,7 @@ const displaySearchResults = (searchQuery, searchResults) => {
         })
 
         listItem.appendChild(resultTitle);
+        listItem.appendChild(buttonGroup);
         listItem.appendChild(resultText);
         resultList.appendChild(listItem);
     });
