@@ -5,8 +5,8 @@ const fs = require("fs")
 const pdf = require('pdf-parse')
 const { Client } = require('@elastic/elasticsearch')
 
-'use strict'
 
+'use strict'
 
 const client = new Client({
     cloud: {
@@ -17,40 +17,41 @@ const client = new Client({
     }
 })
 
-let pdfFile = fs.readFileSync("./report.pdf");
+async function add(pdfFileName) {
+    let pdfFile = fs.readFileSync(`/pdfs/${pdfFileName}`);
 
-async function add() {
     pdf(pdfFile).then((data) => {
         client.index({
             index: "search-db",
             body: {
-                text: data.text,
-                buffer: pdfFile
+                name: pdfFileName,
+                text: data.text
             }
         })
-    })
-
-    // here we are forcing an index refresh, otherwise we will not
-    // get any result in the consequent search
+    });
     await client.indices.refresh({
         index: 'search-db'
     })
 }
 
-async function search() {
-    // Let's search!
+async function search(query) {
     const result = await client.search({
         index: 'search-db',
         body: {
             query: {
-                match: {
-                    text: "mangolemon"
+                match_phrase: {
+                    text: query
+                }
+            },
+            highlight: {
+                fields: {
+                    text: {}
                 }
             }
         }
-    })
+    });
 
-    console.log(result.hits.hits)
+    return result.hits.hits;
 }
 
 async function deleteAllDocuments() {
@@ -64,11 +65,16 @@ async function deleteAllDocuments() {
     });
 }
 
-async function deleteDocument() {
+async function deleteDocument(documentID) {
     await client.delete({
         index: "search-db",
-        id: "nVefhIgBHq9c8gxVTdpt"
+        id: documentID
     })
 }
 
-search()
+module.exports = {
+    add,
+    search,
+    deleteAllDocuments,
+    deleteDocument
+}
