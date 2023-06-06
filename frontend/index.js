@@ -22,7 +22,7 @@ const displaySearchResults = (searchQuery, searchResults) => {
 
     searchResults.forEach(function(result) {
         let listItem = document.createElement("li");
-        listItem.classList.add("list-group-item");
+        listItem.classList.add("list-group-item", "mb-3", "border", "rounded");
 
         let resultTitle = document.createElement("h5");
         resultTitle.classList.add("mb-1");
