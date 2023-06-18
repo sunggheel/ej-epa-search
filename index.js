@@ -19,19 +19,29 @@ app.listen(PORT, () => {
     console.log(`Started express app on port ${PORT}`);
 });
 
-// init db
-const db = require("./db");
-db.on("error", console.error.bind(console, "MongoDB connection error:"));
-
 app.get("/search", async (req, res) => {
     let searchQuery = req.query.query;
     
     let response = await elasticUtils.search(searchQuery);
+
+    function countOccurrences(mainString, searchString) {
+        return mainString.toLowerCase().split(searchString.toLowerCase()).length - 1;
+    }
+
+    // add number of occurences of search query
+    response.forEach((item) => {
+        item.occurrences = countOccurrences(item._source.text, searchQuery);
+    })
     
+    // shorten text by 1 thousand
     response.forEach((item) => {
         item._source.text = item._source.text.slice(0,1000);
     });
 
+    // attach pdf file bytes
+    response.forEach((item) => {
+        item.bytes = fs.readFileSync(`pdfs/${item._source.name}`);
+    });
     
     return res.status(200).json(response);
 })

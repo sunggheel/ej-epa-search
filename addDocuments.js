@@ -7,7 +7,7 @@ const PDFJS = require("pdfjs-dist");
 
 const fs = require("fs")
 const pdf = require('pdf-parse')
-const { Client } = require('@elastic/elasticsearch')
+const { Client } = require('@elastic/elasticsearch');
 
 'use strict'
 
@@ -31,13 +31,13 @@ async function add(pdfFileName) {
                 name: pdfFileName,
                 text: data.text
             }
-        }, id=pdfFileName)
+        });
     });
     await client.indices.refresh({
         index: 'search-db'
     })
 
-    console.log("successfully added document")
+    console.log(`successfully added document: ${pdfFileName}`)
 }
 
 function addAll() {
@@ -47,41 +47,43 @@ function addAll() {
     }
 }
 
-async function findTextOnPage(page, searchText) {
-    const content = await page.getTextContent();
-    
-    for (let i = 0; i < content.items.length; i++) {
-      const item = content.items[i];
-      if (item.str.includes(searchText)) {
-        return page.pageNumber;
-      }
-    }
-    
-    return null;
-  }
+add("MeetingSummaryDCMay94.pdf")
 
-async function findTextInPDF(pdfPath, searchText) {
-    const pdf = await (await PDFJS.getDocument(pdfPath)).promise;
+// async function findTextOnPage(page, searchText) {
+//     const content = await page.getTextContent();
     
-    for (let i = 1; i < pdf.numPages; i++) {
-        let page = await pdf.getPage(i);
-        console.log(await page.getTextContent());
-
-        break;
-    }
+//     for (let i = 0; i < content.items.length; i++) {
+//       const item = content.items[i];
+//       if (item.str.includes(searchText)) {
+//         return page.pageNumber;
+//       }
+//     }
     
-    return null;
-}
+//     return null;
+//   }
 
-const pdfPath = 'pdfs/Draft NEJAC Public Meeting Summary Nov 29_Dec 1 2023.pdf';
-const searchText = 'EPA';
+// async function findTextInPDF(pdfPath, searchText) {
+//     const pdf = await (await PDFJS.getDocument(pdfPath)).promise;
+    
+//     for (let i = 1; i < pdf.numPages; i++) {
+//         let page = await pdf.getPage(i);
+//         console.log(await page.getTextContent());
 
-findTextInPDF(pdfPath, searchText)
-  .then(pageNumber => {
-    if (pageNumber) {
-      console.log(`Text found on page ${pageNumber}`);
-    } else {
-      console.log('Text not found in the PDF');
-    }
-  })
-  .catch(err => console.error(err));
+//         break;
+//     }
+    
+//     return null;
+// }
+
+// const pdfPath = 'pdfs/Draft NEJAC Public Meeting Summary Nov 29_Dec 1 2023.pdf';
+// const searchText = 'EPA';
+
+// findTextInPDF(pdfPath, searchText)
+//   .then(pageNumber => {
+//     if (pageNumber) {
+//       console.log(`Text found on page ${pageNumber}`);
+//     } else {
+//       console.log('Text not found in the PDF');
+//     }
+//   })
+//   .catch(err => console.error(err));
