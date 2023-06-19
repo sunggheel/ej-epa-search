@@ -21,29 +21,41 @@ app.listen(PORT, () => {
 
 app.get("/search", async (req, res) => {
     let searchQuery = req.query.query;
-    
-    let response = await elasticUtils.search(searchQuery);
 
-    function countOccurrences(mainString, searchString) {
-        return mainString.toLowerCase().split(searchString.toLowerCase()).length - 1;
+    try {
+        let response = await elasticUtils.search(searchQuery);
+
+        function countOccurrences(mainString, searchString) {
+            return mainString.toLowerCase().split(searchString.toLowerCase()).length - 1;
+        }
+    
+        // add number of occurences of search query
+        response.forEach((item) => {
+            let totalOccurrences = 0;
+            for (let pageContent of item._source.content) {
+                totalOccurrences += countOccurrences(pageContent, searchQuery);
+            }
+
+            item.occurrences = totalOccurrences;
+        })
+        
+        // shorten text by 1 thousand
+        // response.forEach((item) => {
+        //     item._source.text = item._source.text.slice(0,1000);
+        // });
+    
+        // attach pdf file bytes
+        response.forEach((item) => {
+            item.bytes = fs.readFileSync(`pdfs/${item._source.name}`);
+        });
+        
+        return res.status(200).json(response);
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json([]);
     }
-
-    // add number of occurences of search query
-    response.forEach((item) => {
-        item.occurrences = countOccurrences(item._source.text, searchQuery);
-    })
     
-    // shorten text by 1 thousand
-    response.forEach((item) => {
-        item._source.text = item._source.text.slice(0,1000);
-    });
 
-    // attach pdf file bytes
-    response.forEach((item) => {
-        item.bytes = fs.readFileSync(`pdfs/${item._source.name}`);
-    });
-    
-    return res.status(200).json(response);
 })
 
 // Serve static frontend app

@@ -1,89 +1,94 @@
-const dotenv = require("dotenv")
+const dotenv = require("dotenv");
 dotenv.config();
 
 const CryptoJS = require('crypto-js');
 
-const PDFJS = require("pdfjs-dist");
+const fs = require("fs");
+const PDFJS = require('pdfjs-dist');
 
-const fs = require("fs")
-const pdf = require('pdf-parse')
 const { Client } = require('@elastic/elasticsearch');
 
-'use strict'
+// 'use strict'
 
 const client = new Client({
-    cloud: {
-        id: process.env.ELASTIC_CLOUD_ID
-    },
+    node: process.env.ELASTIC_URL,
     auth: {
-        apiKey: process.env.ELASTIC_API_KEY
+        username: process.env.ELASTIC_USERNAME,
+        password: process.env.ELASTIC_PASSWORD
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
-async function add(pdfFileName) {
-    let pdfFile = fs.readFileSync(`pdfs/${pdfFileName}`);
+const catcher = (error) => {console.error(error)}
 
-    pdf(pdfFile).then((data) => {
-        client.index({
-            index: "search-db",
-            id: CryptoJS.SHA256(pdfFileName),
-            body: {
-                name: pdfFileName,
-                text: data.text
+const add = async (pdfFileName) => {
+    try {
+        await PDFJS.getDocument(`pdfs/${pdfFileName}`).promise.then(async (data) => {
+            let documentContent = [];
+            for (let i = 1; i <= data.numPages; i++) {
+                await data.getPage(i).then(async (page) => {
+                    await page.getTextContent().then((content) => {
+                        let pageText = content.items[0].str.toLowerCase();
+    
+                        for (let j = 1; j < content.items.length; j++) {
+                            let currentY = content.items[j].transform[5];
+                            let previousY = content.items[j-1].transform[5];
+                            if (currentY != previousY) pageText += '\n';
+    
+                            pageText += content.items[j].str.toLowerCase();
+                        }
+    
+                        documentContent.push(pageText);
+                    }).catch((error) => {
+                        console.log(`error on page ${i}`)
+                    })
+                }).catch((error) => {
+                    console.log(`error getting page ${i}`)
+                })
             }
-        });
-    });
-    await client.indices.refresh({
-        index: 'search-db'
-    })
 
-    console.log(`successfully added document: ${pdfFileName}`)
+            try {
+                await client.index({
+                    index: "search-db",
+                    id: CryptoJS.SHA256(pdfFileName).toString(),
+                    body: {
+                        name: pdfFileName,
+                        content: documentContent
+                    }
+                });
+
+                // console.log({
+                //     index: "search-db",
+                //     id: CryptoJS.SHA256(pdfFileName).toString(),
+                //     body: {
+                //         name: pdfFileName,
+                //         content: documentContent
+                //     }
+                // })
+        
+                await client.indices.refresh({
+                    index: 'search-db'
+                });
+            } catch (error) {
+                console.log("couldnt add to index")
+            }
+        }).catch((error) => {
+            console.log(`error reading pdf ${pdfFileName}`)
+        });
+    
+        console.log(`successfully added document: ${pdfFileName}`)
+    } catch (error) {
+        console.log(`failed to add document: ${pdfFileName}`)
+    }
 }
 
-function addAll() {
+async function addAll() {
     let pdfDocuments = fs.readdirSync("pdfs");
     for (let pdfFileName of pdfDocuments) {
-        add(pdfFileName);
+        await add(pdfFileName);
     }
 }
 
 add("MeetingSummaryDCMay94.pdf")
-
-// async function findTextOnPage(page, searchText) {
-//     const content = await page.getTextContent();
-    
-//     for (let i = 0; i < content.items.length; i++) {
-//       const item = content.items[i];
-//       if (item.str.includes(searchText)) {
-//         return page.pageNumber;
-//       }
-//     }
-    
-//     return null;
-//   }
-
-// async function findTextInPDF(pdfPath, searchText) {
-//     const pdf = await (await PDFJS.getDocument(pdfPath)).promise;
-    
-//     for (let i = 1; i < pdf.numPages; i++) {
-//         let page = await pdf.getPage(i);
-//         console.log(await page.getTextContent());
-
-//         break;
-//     }
-    
-//     return null;
-// }
-
-// const pdfPath = 'pdfs/Draft NEJAC Public Meeting Summary Nov 29_Dec 1 2023.pdf';
-// const searchText = 'EPA';
-
-// findTextInPDF(pdfPath, searchText)
-//   .then(pageNumber => {
-//     if (pageNumber) {
-//       console.log(`Text found on page ${pageNumber}`);
-//     } else {
-//       console.log('Text not found in the PDF');
-//     }
-//   })
-//   .catch(err => console.error(err));

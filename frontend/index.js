@@ -6,7 +6,6 @@ const performSearch = async () => {
 
     // Display loading spinner
     document.getElementById("searchResults").innerHTML = '<div class="spinner-border text-center" role="status"></div>';
-    
     let response = await fetch(`http://localhost:5000/search?query=${searchQuery}`);
     let data = await response.json();
     console.log(data);
@@ -15,10 +14,10 @@ const performSearch = async () => {
 
     let searchResultsContainer = document.getElementById("searchResults");
 
-    if (searchResults.length === 0) {
-        searchResultsContainer.innerHTML = `<p>No results found for ${searchQuery}.</p>`;
-        return;
-    }
+    // if (searchResults.length === 0) {
+    //     searchResultsContainer.innerHTML = `<p>No results found for ${searchQuery}.</p>`;
+    //     return;
+    // }
 
     searchResultsContainer.innerHTML = "<p>Showing results for: " + searchQuery + "</p>";
 
@@ -27,9 +26,35 @@ const performSearch = async () => {
 
 const displaySearchResults = () => {
     let searchResultsContainer = document.getElementById("searchResults");
+    searchResultsContainer.innerHTML = "";
 
     let resultList = document.createElement("ul");
     resultList.classList.add("list-group");
+
+    // build the dropdown
+    let dropdownDiv = document.createElement("div");
+    dropdownDiv.classList.add("dropdown");
+    dropdownDiv.innerHTML = '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sort By</button>';
+
+    let dropdownMenu = document.createElement("div");
+    dropdownMenu.classList.add("dropdown-menu");
+
+    let sortByOccurrencesButton = document.createElement("button");
+    sortByOccurrencesButton.classList.add("dropdown-item");
+    sortByOccurrencesButton.innerHTML = "Search word occurrences"
+    sortByOccurrencesButton.onclick = sortResultsByOccurrences;
+
+    let sortByDateButton = document.createElement("button");
+    sortByDateButton.classList.add("dropdown-item");
+    sortByDateButton.innerHTML = "Document date"
+    sortByDateButton.onclick = sortResultsByDate;
+
+    dropdownMenu.appendChild(sortByOccurrencesButton);
+    dropdownMenu.appendChild(sortByDateButton);
+
+    dropdownDiv.appendChild(dropdownMenu);
+
+    searchResultsContainer.appendChild(dropdownDiv);
 
     searchResults.forEach((result) => {
         let listItem = document.createElement("li");
@@ -67,8 +92,8 @@ const displaySearchResults = () => {
         // highlights text
         let resultText = document.createElement("p");
         resultText.classList.add("mb-1");
-        result.highlight.text.forEach((text) => {
-            resultText.textContent += text.replace(/(<([^>]+)>)/gi, "") + "\n";
+        result.highlight.content.forEach((text) => {
+            resultText.innerHTML += text.replace(/(<([^>]+)>)/gi, "") + "\n" + "<br><br>"
         })
 
         listItem.appendChild(resultTitle);
@@ -86,10 +111,18 @@ const displaySearchResults = () => {
     instance.mark(searchQuery, {separateWordSearch: false});
 }
 
+const sortResultsByOccurrences = () => {
+    searchResults.sort((a,b) => {
+        return a.occurrences - b.occurrences;
+    });
+    displaySearchResults();
+}
+
+const sortResultsByDate = () => {
+    return;
+}
+
 const showPDFModal = (pdfBytes) => {
-    let modalTitle = document.getElementById("modalTitle");
-    let modalBody = document.getElementById("modalBody");
-    let modalCanvas = document.getElementById("modalCanvas");
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.worker.min.js"
     // https://mozilla.github.io/pdf.js/build/pdf.worker.js

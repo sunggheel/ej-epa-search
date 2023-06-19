@@ -3,6 +3,7 @@ dotenv.config();
 
 const { Client } = require('@elastic/elasticsearch')
 
+
 'use strict'
 
 const client = new Client({
@@ -16,26 +17,21 @@ const client = new Client({
     }
 });
 
-async function search(query) {
+async function f() {
     const result = await client.search({
         index: 'search-db',
         body: {
             query: {
-                terms: {
-                    content: [query]
-                }
-            },
-            highlight: {
-                fields: {
-                    content: {}
-                }
+                match_all: {}
             }
         }
     });
 
-    return result.hits.hits;
+    console.log(`Number of documents in search-db: ${result.hits.hits.length}`);
+
+    result.hits.hits.forEach((a) => {
+        console.log(a._source.name);
+    });
 }
 
-module.exports = {
-    search
-}
+f();
