@@ -32,7 +32,6 @@ async function deleteAllDocuments() {
     } catch (error) {
         console.log("couldnt delete all documents");
     }
-
 }
 
 deleteAllDocuments();

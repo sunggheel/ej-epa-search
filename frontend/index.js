@@ -34,7 +34,7 @@ const displaySearchResults = () => {
     // build the dropdown
     let dropdownDiv = document.createElement("div");
     dropdownDiv.classList.add("dropdown");
-    dropdownDiv.innerHTML = '<button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sort By</button>';
+    dropdownDiv.innerHTML = '<button class="btn btn-secondary dropdown-toggle ml-auto" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sort By</button>';
 
     let dropdownMenu = document.createElement("div");
     dropdownMenu.classList.add("dropdown-menu");
@@ -113,7 +113,7 @@ const displaySearchResults = () => {
 
 const sortResultsByOccurrences = () => {
     searchResults.sort((a,b) => {
-        return a.occurrences - b.occurrences;
+        return b.occurrences - a.occurrences;
     });
     displaySearchResults();
 }

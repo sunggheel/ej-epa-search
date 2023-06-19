@@ -19,7 +19,19 @@ const client = new Client({
 
 async function countDocuments() {
     try {
-        const result = await client.search({
+        let result = await client.count({
+            index: "search-db"
+        });
+
+        console.log(`Number of documents in search-db: ${result.count}`);
+    } catch (error) {
+        console.log("Couldnt count documents")
+    }
+}
+
+async function countDocuments2() {
+    try {
+        let result = await client.search({
             index: 'search-db',
             body: {
                 query: {
@@ -35,3 +47,4 @@ async function countDocuments() {
 }
 
 countDocuments();
+countDocuments2();

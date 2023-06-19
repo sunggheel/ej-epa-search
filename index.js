@@ -45,16 +45,23 @@ app.get("/search", async (req, res) => {
         // });
     
         // attach pdf file bytes
-        response.forEach((item) => {
-            item.bytes = fs.readFileSync(`pdfs/${item._source.name}`);
-        });
+        // response.forEach((item) => {
+        //     item.bytes = fs.readFileSync(`pdfs/${item._source.name}`);
+        // });
         
         return res.status(200).json(response);
     } catch (error) {
         console.log(error);
         return res.status(400).json([]);
     }
-    
+});
+
+app.get("/pdf", async (req, res) => {
+    let pdfFileName = req.query.name;
+    let searchQuery = req.query.query;
+
+
+
 
 })
 

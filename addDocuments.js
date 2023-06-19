@@ -30,6 +30,8 @@ const add = async (pdfFileName) => {
             for (let i = 1; i <= data.numPages; i++) {
                 await data.getPage(i).then(async (page) => {
                     await page.getTextContent().then((content) => {
+                        if (content.items.length === 0) return;
+
                         let pageText = content.items[0].str.toLowerCase();
     
                         for (let j = 1; j < content.items.length; j++) {
@@ -42,7 +44,7 @@ const add = async (pdfFileName) => {
     
                         documentContent.push(pageText);
                     }).catch((error) => {
-                        console.log(`error on page ${i}`)
+                        console.log(error);
                     })
                 }).catch((error) => {
                     console.log(`error getting page ${i}`)
@@ -50,7 +52,7 @@ const add = async (pdfFileName) => {
             }
 
             try {
-                await client.index({
+                let  = await client.index({
                     index: "search-db",
                     id: CryptoJS.SHA256(pdfFileName).toString(),
                     body: {
@@ -58,21 +60,12 @@ const add = async (pdfFileName) => {
                         content: documentContent
                     }
                 });
-
-                // console.log({
-                //     index: "search-db",
-                //     id: CryptoJS.SHA256(pdfFileName).toString(),
-                //     body: {
-                //         name: pdfFileName,
-                //         content: documentContent
-                //     }
-                // })
         
                 await client.indices.refresh({
-                    index: 'search-db'
+                    index: "search-db"
                 });
             } catch (error) {
-                console.log("couldnt add to index")
+                console.log(error)
             }
         }).catch((error) => {
             console.log(`error reading pdf ${pdfFileName}`)
@@ -85,10 +78,28 @@ const add = async (pdfFileName) => {
 }
 
 async function addAll() {
+    let result = await client.search({
+        index: "search-db",            
+        body: {
+            query: {
+                match_all: {}
+            }
+        }
+    });
+
+    let documentNameSet = new Set();
+    for (let i = 0; i < result.hits.hits.length; i++) {
+        documentNameSet.add(result.hits.hits[i]._source.name)
+    }
+    
     let pdfDocuments = fs.readdirSync("pdfs");
     for (let pdfFileName of pdfDocuments) {
+        if (documentNameSet.has(pdfFileName)) {
+            console.log(`document already indexed: ${pdfFileName}`)
+            continue;
+        }
         await add(pdfFileName);
     }
 }
 
-add("MeetingSummaryDCMay94.pdf")
+// addAll()
