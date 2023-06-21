@@ -53,7 +53,7 @@ const add = async (pdfFileName) => {
 
             try {
                 let  = await client.index({
-                    index: "search-db",
+                    index: process.env.ELASTIC_INDEX_NAME,
                     id: CryptoJS.SHA256(pdfFileName).toString(),
                     body: {
                         name: pdfFileName,
@@ -62,7 +62,7 @@ const add = async (pdfFileName) => {
                 });
         
                 await client.indices.refresh({
-                    index: "search-db"
+                    index: process.env.ELASTIC_INDEX_NAME
                 });
             } catch (error) {
                 console.log(error)
@@ -79,7 +79,7 @@ const add = async (pdfFileName) => {
 
 async function addAll() {
     let result = await client.search({
-        index: "search-db",            
+        index: process.env.ELASTIC_INDEX_NAME,            
         body: {
             query: {
                 match_all: {}
@@ -102,4 +102,4 @@ async function addAll() {
     }
 }
 
-// addAll()
+add("05.06.2021.nejac_.public.meeting.summary.final_.pdf")

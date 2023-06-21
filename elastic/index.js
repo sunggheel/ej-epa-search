@@ -18,11 +18,11 @@ const client = new Client({
 
 async function search(query) {
     const result = await client.search({
-        index: 'search-db',
+        index: process.env.ELASTIC_INDEX_NAME,
         body: {
             query: {
-                terms: {
-                    content: [query]
+                match_phrase: {
+                    content: query
                 }
             },
             highlight: {

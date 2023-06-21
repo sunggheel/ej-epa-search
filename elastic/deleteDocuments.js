@@ -20,7 +20,7 @@ const client = new Client({
 async function deleteAllDocuments() {
     try {
         await client.deleteByQuery({
-            index: "search-db",            
+            index: process.env.ELASTIC_INDEX_NAME,            
             body: {
                 query: {
                     match_all: {}

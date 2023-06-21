@@ -1,0 +1,6 @@
+curl -XPUT "localhost:9200/search-db/_settings" -H 'Content-Type: application/json' -d' {
+    "index" : {
+        "highlight.max_analyzed_offset" : 6000000
+    }
+}
+'

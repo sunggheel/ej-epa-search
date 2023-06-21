@@ -78,9 +78,11 @@ const displaySearchResults = () => {
         // downloadButton.innerHTML = '<i class="bi bi-download"></i>';
         downloadButton.innerHTML = 'Download';
 
-        viewButton.onclick = (event) => {showPDFModal(result.bytes.data)}
+        viewButton.onclick = (event) => {showPDFModal(result._source.name, result.pageHits)}
         viewButton.setAttribute("data-toggle", "modal");
         viewButton.setAttribute("data-target", "resultModal");
+
+        downloadButton.onclick = (event) => {downloadPDF(result._source.name)}
 
         buttonGroup.appendChild(viewButton);
         buttonGroup.appendChild(downloadButton);
@@ -122,7 +124,21 @@ const sortResultsByDate = () => {
     return;
 }
 
-const showPDFModal = (pdfBytes) => {
+const showPDFModal = async (pdfFileName, pageHits) => {
+
+    let requestOptions = {
+        method: "POST",
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({pdfFileName, pageHits})
+    }
+
+    let response = await fetch(`http://localhost:5000/pdf`, requestOptions);
+    let data = await response.json();
+
+    let pdfBytes = data.data;
+
+    console.log(pdfBytes)
+
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.worker.min.js"
     // https://mozilla.github.io/pdf.js/build/pdf.worker.js
@@ -177,13 +193,32 @@ const showPDFModal = (pdfBytes) => {
     //     console.log(`Page ${pageNumber} has been rendered`);
     // });
 
-    const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
+    const loadingTask = pdfjsLib.getDocument({data: pdfBytes});
     loadingTask.promise.then((pdfDocument) => {
         pdfViewer.setDocument(pdfDocument);
     }).catch(err => console.log(err))
 
     let modal = new bootstrap.Modal(document.getElementById("resultModal"));
     modal.show();
+}
+
+const downloadPDF = async (pdfFileName) => {
+    let response = await fetch(`http://localhost:5000/pdf?pdfFileName=${pdfFileName}`);
+    let blobData = await response.blob();
+
+    if (!blobData) return;
+
+    let url = URL.createObjectURL(blobData);
+
+    let link = document.createElement("a");
+    link.href = url;
+    link.download = pdfFileName;
+
+    link.click();
+
+    // cleanup
+    // document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 document.getElementById("searchButton").addEventListener("click", performSearch);
