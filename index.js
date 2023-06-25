@@ -63,8 +63,6 @@ app.get("/pdf", async (req, res) => {
         res.set('Content-Disposition', `attachment; filename="pdf/${pdfFileName}"`);
         res.set('Content-Type', 'application/pdf');
         res.send(pdfFileBytes);
-
-        // return res.status(200).json(pdfFileBytes);
     } catch (error) {
         console.log(error);
         return res.status(400).json();
