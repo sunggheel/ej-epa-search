@@ -21,8 +21,8 @@ async function searchDocuments(query) {
         index: process.env.ELASTIC_INDEX_NAME,
         body: {
             query: {
-                terms: {
-                    content: [query]
+                match_phrase: {
+                    content: query
                 }
             },
             highlight: {
@@ -36,4 +36,4 @@ async function searchDocuments(query) {
     console.log(result.hits.hits);
 }
 
-searchDocuments("preface")
+searchDocuments("Following the presentations, members of the Gulf Coast Hurricanes Work Group provided the Executive")

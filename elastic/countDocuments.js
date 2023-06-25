@@ -34,6 +34,7 @@ async function countDocuments2() {
         let result = await client.search({
             index: process.env.ELASTIC_INDEX_NAME,
             body: {
+                size: 100,
                 query: {
                     match_all: {}
                 }
@@ -41,13 +42,10 @@ async function countDocuments2() {
         });
 
         console.log(`Number of documents in ${process.env.ELASTIC_INDEX_NAME}: ${result.hits.hits.length}`);
-        result.hits.hits.forEach((a) => {
-            console.log(a._source.name)
-        })
     } catch (error) {
         console.log("Couldnt count documents")
     }
 }
 
 countDocuments();
-// countDocuments2();
+countDocuments2();

@@ -37,6 +37,14 @@ const createIndex = async () => {
                             type: "keyword"
                         }
                     }
+                },
+                date: {
+                    type: "text",
+                    fields: {
+                        keyword: {
+                            type: "keyword"
+                        }
+                    }
                 }
             }
         }

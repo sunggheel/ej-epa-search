@@ -39,18 +39,30 @@ const displaySearchResults = () => {
     let dropdownMenu = document.createElement("div");
     dropdownMenu.classList.add("dropdown-menu");
 
-    let sortByOccurrencesButton = document.createElement("button");
-    sortByOccurrencesButton.classList.add("dropdown-item");
-    sortByOccurrencesButton.innerHTML = "Search word occurrences"
-    sortByOccurrencesButton.onclick = sortResultsByOccurrences;
+    let sortByOccurrencesASCButton = document.createElement("button");
+    sortByOccurrencesASCButton.classList.add("dropdown-item");
+    sortByOccurrencesASCButton.innerHTML = "Search word occurrences ASC";
+    sortByOccurrencesASCButton.onclick = () => {sortResultsByOccurrences(1)}
 
-    let sortByDateButton = document.createElement("button");
-    sortByDateButton.classList.add("dropdown-item");
-    sortByDateButton.innerHTML = "Document date"
-    sortByDateButton.onclick = sortResultsByDate;
+    let sortByOccurrencesDESCButton = document.createElement("button");
+    sortByOccurrencesDESCButton.classList.add("dropdown-item");
+    sortByOccurrencesDESCButton.innerHTML = "Search word occurrences DESC";
+    sortByOccurrencesDESCButton.onclick = () => {sortResultsByOccurrences(-1)}
 
-    dropdownMenu.appendChild(sortByOccurrencesButton);
-    dropdownMenu.appendChild(sortByDateButton);
+    let sortByDateASCButton = document.createElement("button");
+    sortByDateASCButton.classList.add("dropdown-item");
+    sortByDateASCButton.innerHTML = "Document date ASC";
+    sortByDateASCButton.onclick = () => {sortResultsByDate(1)}
+
+    let sortByDateDESCButton = document.createElement("button");
+    sortByDateDESCButton.classList.add("dropdown-item");
+    sortByDateDESCButton.innerHTML = "Document date DESC";
+    sortByDateDESCButton.onclick = () => {sortResultsByDate(-1)}
+
+    dropdownMenu.appendChild(sortByOccurrencesASCButton);
+    dropdownMenu.appendChild(sortByOccurrencesDESCButton);
+    dropdownMenu.appendChild(sortByDateASCButton);
+    dropdownMenu.appendChild(sortByDateDESCButton);
 
     dropdownDiv.appendChild(dropdownMenu);
 
@@ -91,6 +103,10 @@ const displaySearchResults = () => {
         occurrencesText.classList.add("mb-1");
         occurrencesText.innerHTML = `Total search word occurrences: ${result.occurrences}`;
 
+        let dateText = document.createElement("p");
+        dateText.classList.add("mb-1");
+        dateText.innerHTML = `Document date: ${result._source.date}`;
+
         // highlights text
         let resultText = document.createElement("p");
         resultText.classList.add("mb-1");
@@ -101,6 +117,7 @@ const displaySearchResults = () => {
         listItem.appendChild(resultTitle);
         listItem.appendChild(buttonGroup);
         listItem.appendChild(occurrencesText);
+        listItem.appendChild(dateText);
         listItem.appendChild(resultText);
 
         resultList.appendChild(listItem);
@@ -113,15 +130,38 @@ const displaySearchResults = () => {
     instance.mark(searchQuery, {separateWordSearch: false});
 }
 
-const sortResultsByOccurrences = () => {
+const sortResultsByOccurrences = (direction) => {
     searchResults.sort((a,b) => {
-        return b.occurrences - a.occurrences;
+        return direction * (a.occurrences - b.occurrences);
     });
+
     displaySearchResults();
 }
 
-const sortResultsByDate = () => {
-    return;
+const sortResultsByDate = (direction) => {
+    searchResults.sort((a,b) => {
+        // [MM, DD, YYYY]
+        let aDateArray = a._source.date.split("/").map(a => parseInt(a));
+        let bDateArray = b._source.date.split("/").map(a => parseInt(a));
+        
+        if (aDateArray.length !== 3) {
+            console.error(`Incorrect date format: ${a._source.name}`);
+            return 0;
+        }
+        if (bDateArray.length !== 3) {
+            console.error(`Incorrect date format: ${b._source.name}`);
+            return 0;
+        }
+        
+        // start comparing from YYYY, then MM, then DD
+        for (let i of [2,0,1]) {
+            if (aDateArray[i] !== bDateArray[i]) return direction * (aDateArray[i] - bDateArray[i]);
+        }
+
+        return 0;
+    });
+
+    displaySearchResults();
 }
 
 const showPDFModal = async (pdfFileName, pageHits) => {
@@ -136,8 +176,6 @@ const showPDFModal = async (pdfFileName, pageHits) => {
     let data = await response.json();
 
     let pdfBytes = data.data;
-
-    console.log(pdfBytes)
 
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.worker.min.js"
@@ -215,9 +253,7 @@ const downloadPDF = async (pdfFileName) => {
     link.download = pdfFileName;
 
     link.click();
-
-    // cleanup
-    // document.body.removeChild(link);
+    
     URL.revokeObjectURL(url);
 }
 

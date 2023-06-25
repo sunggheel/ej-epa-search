@@ -21,7 +21,8 @@ const client = new Client({
     }
 });
 
-const catcher = (error) => {console.error(error)}
+let datesJSONString = fs.readFileSync("dates.json");
+let datesObj = JSON.parse(datesJSONString);
 
 const add = async (pdfFileName) => {
     try {
@@ -57,7 +58,8 @@ const add = async (pdfFileName) => {
                     id: CryptoJS.SHA256(pdfFileName).toString(),
                     body: {
                         name: pdfFileName,
-                        content: documentContent
+                        content: documentContent,
+                        date: datesObj[pdfFileName]
                     }
                 });
         
@@ -79,8 +81,9 @@ const add = async (pdfFileName) => {
 
 async function addAll() {
     let result = await client.search({
-        index: process.env.ELASTIC_INDEX_NAME,            
+        index: process.env.ELASTIC_INDEX_NAME,
         body: {
+            size: 100,
             query: {
                 match_all: {}
             }
@@ -93,13 +96,21 @@ async function addAll() {
     }
     
     let pdfDocuments = fs.readdirSync("pdfs");
+    pdfDocuments.sort();
+    
     for (let pdfFileName of pdfDocuments) {
+        if (!datesObj.hasOwnProperty(pdfFileName)) {
+            console.log(`document has no date: ${pdfFileName}`)
+            continue;
+        }
+
         if (documentNameSet.has(pdfFileName)) {
             console.log(`document already indexed: ${pdfFileName}`)
             continue;
         }
+        
         await add(pdfFileName);
     }
 }
 
-add("05.06.2021.nejac_.public.meeting.summary.final_.pdf")
+addAll();
