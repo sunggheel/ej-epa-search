@@ -1,76 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple Search UI</title>
-    <!-- Include Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="./index.css" />
-
-    <!-- jquery -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <!-- popperjs -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha512-ldc1sPu1FZ8smgkgp+HwnYyVb1eRn2wEmKrDg1JqPEb02+Ei4kNzDIQ0Uwh0AJVLQFjJoWwG+764x70zy5Tv4A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <!-- Include Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-    
-    <!-- mark.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <!-- pdf.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.min.js" integrity="sha512-FbzTWNUXsD1HkMnfODpqj77B8pWe5eG9MaVtaUyZQGe8FaeQg1sNKtwMWk9USkHFu3ub8dg5PSE24s4JJpJQcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
-    <!-- pdfviewer.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf_viewer.min.js" integrity="sha512-u73EQIcgaUO+rlqp5rLbzK2d/hIOwV6kkHSpvceuoFc0zFJ3jp70N5Hv+RKenAMoIiEBD9f4b9zZKmChTRaXqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf_viewer.min.css" integrity="sha512-Pb+a14FJsB9HcCQSZAof/bRsYnADz8d9IeOgIOHpYBS4fwoI3PnMU41augGQ4ugYFTb90X93Su35iJT9tj/tpw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- pdfworker -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.worker.min.js" integrity="sha512-rbVtx+EMuGKVSQEruVomHnv+X9xKJ/zc9seGck0x/0GgLmaWrKcKqnxPUkGFWgCHWBQQ44DkOCSe9DNcwsaJ7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
-
-    <!-- Include your custom JavaScript -->
-    <script defer src="./index.js"></script>
-  </head>
-
-  <body>
-    <!-- <div class="mt-4" style="margin-left: 20px;">
-      <input type="file" id="uploadInput" class="form-control-file" accept=".pdf" />
-      <button class="btn btn-primary mt-2" type="button" id="uploadButton">Upload</button>
-    </div> -->
-    <div class="container custom-container">
-      <div class="row">
-        <div class="col-md-6 offset-md-3 mt-5">
-          <h1 class="text-center mb-4">Simple Search UI</h1>
-          <div class="input-group">
-            <input type="text" id="searchInput" class="form-control" placeholder="Enter your search query" />
-            <div class="input-group-append">
-              <button class="btn btn-primary" type="button" id="searchButton">Search</button>
-            </div>
-          </div>
-          <div id="searchResults" class="mt-4 text-center"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal -->
-    <!-- <div class="modal fade text-center" id="resultModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered"></div>
-
-        <div id="modalBody"></div>
-    </div> -->
-
-    <!-- Modal -->
-    <div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="viewer-container" id="modalBody"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simple Search UI</title>
+        <!-- Include Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="./index.css" />
+        <!-- jquery -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <!-- popperjs -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha512-ldc1sPu1FZ8smgkgp+HwnYyVb1eRn2wEmKrDg1JqPEb02+Ei4kNzDIQ0Uwh0AJVLQFjJoWwG+764x70zy5Tv4A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <!-- Include Bootstrap JS -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+        <!-- mark.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <!-- pdf.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.min.js" integrity="sha512-FbzTWNUXsD1HkMnfODpqj77B8pWe5eG9MaVtaUyZQGe8FaeQg1sNKtwMWk9USkHFu3ub8dg5PSE24s4JJpJQcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <!-- pdfviewer.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf_viewer.min.js" integrity="sha512-u73EQIcgaUO+rlqp5rLbzK2d/hIOwV6kkHSpvceuoFc0zFJ3jp70N5Hv+RKenAMoIiEBD9f4b9zZKmChTRaXqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf_viewer.min.css" integrity="sha512-Pb+a14FJsB9HcCQSZAof/bRsYnADz8d9IeOgIOHpYBS4fwoI3PnMU41augGQ4ugYFTb90X93Su35iJT9tj/tpw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <!-- pdfworker -->
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.worker.min.js" integrity="sha512-rbVtx+EMuGKVSQEruVomHnv+X9xKJ/zc9seGck0x/0GgLmaWrKcKqnxPUkGFWgCHWBQQ44DkOCSe9DNcwsaJ7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+        <!-- Include your custom JavaScript -->
+        <script defer src="./index.js"></script>
+    </head>
+    <body>
+        <!-- <div class="mt-4" style="margin-left: 20px;"><input type="file" id="uploadInput" class="form-control-file" accept=".pdf" /><button class="btn btn-primary mt-2" type="button" id="uploadButton">Upload</button></div> -->
+        <div class="container custom-container">
+            <div class="row">
+                <div class="col-md-6 offset-md-3 mt-5">
+                    <h1 class="text-center mb-4">
+                        Minutes of the National Environmental Advisory Council A Keyword-Searchable Database.
+                    </h1>
+                    <p class="text-center mb-4">
+                        Since its creation in 1993, the National Environmental Justice Advisory Council (NEJAC) has provided a formal platform for voicing dilemmas and concerns relating to environmental justice to officials at the U.S. Environmental Protection Agency.  Created in response to the rise of the environmental justice movement, the goals of NEJAC are to enable direct communication between this agency and stakeholders in environmental justice communities and to help the EPA integrate these concerns into its regulatory work. This search tool provides a keyword search of all the minutes of NEJAC meetings posted on EPA’s website from 1994 to the present.  Users may quickly comb through the decades of NEJAC deliberations for participants, places, topics, and themes mentioned in NEJAC minutes.  They can also then download pdfs of relevant meeting notes.  
+                    </p>
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Enter your search query" />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+                        </div>
+                    </div>
+                    <div id="searchResults" class="mt-4 text-center"></div>
+                </div>
             </div>
         </div>
-    </div>
-
-
-  </body>
+        <!-- Modal -->
+        <div class="modal fade" id="resultModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="viewer-container" id="modalBody"></div>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>
