@@ -7,6 +7,8 @@ const PDFJS = require('pdfjs-dist');
 
 const { Client } = require('@elastic/elasticsearch');
 
+const {google} = require('googleapis');
+
 // 'use strict'
 
 const client = new Client({
@@ -20,26 +22,36 @@ const client = new Client({
     }
 });
 
+// const auth = new GoogleAuth({
+//     scopes: 'https://www.googleapis.com/auth/drive',
+// });
+
+
+const drive = google.drive({
+    version: "v3",
+    auth: process.env.GOOGLE_API_KEY
+});
+
 async function indexFromDrive() {
+
     let datesObj = await readDatesFromSheet();
 
     // get files list from folder
-    let response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${process.env.NEJAC_MINUTES_FOLDER_ID}'+in+parents&key=${process.env.GOOGLE_API_KEY}`);
+    let response = await fetch(`https://www.googleapis.com/drive/v2/files?q='${process.env.NEJAC_MINUTES_FOLDER_ID}'+in+parents&key=${process.env.GOOGLE_API_KEY}`);
     let data = await response.json();
 
-    for (let file of data.files) {
+    for (let file of data.items) {
         if (file.kind !== "drive#file") continue;
         if (file.mimeType !== "application/pdf") continue;
-        if (!datesObj.hasOwnProperty(file.name)) {
-            console.log(`Document not in spreadsheet: ${file.name}`);
+        if (!datesObj.hasOwnProperty(file.title)) {
+            console.log(`Document not in spreadsheet: ${file.title}`);
             continue;
         }
-        
-        let arrayBuffer = await downloadPDF(file.id);
 
-        console.log(`indexing doc: ${file.name}`)
-        indexDocument(file.name, arrayBuffer, datesObj[file.name]);
-        return;
+        let buffer = await downloadPDF(file.id);
+        let arr = buffer.buffer;
+
+        indexDocument(file.title, file.id, arr, datesObj[file.title]);
     }
 }
 
@@ -57,62 +69,66 @@ async function readDatesFromSheet() {
 }
 
 async function downloadPDF(fileID) {
-    let response = await fetch(`https://drive.google.com/uc?export=download&id=${fileID}`);
-    let arrayBuffer = await response.arrayBuffer();
-    
-    return arrayBuffer;
+    let res = await drive.files.get(
+        {fileId: fileID, alt: "media"},
+        {responseType: "stream"}
+    );
+
+    let chunks = [];
+    for await (let chunk of res.data) {
+        chunks.push(chunk)
+    }
+    return Buffer.concat(chunks);
 }
 
-async function indexDocument(pdfFileName, arrayBuffer, documentDate) {
-    await PDFJS.getDocument(arrayBuffer).promise.then(async (data) => {
+async function indexDocument(pdfFileName, driveFileID, arr, documentDate) {
+    try {
+        console.log(`indexing doc: ${pdfFileName}`);
+
+        let data = await PDFJS.getDocument(arr).promise;
         let documentContent = [];
         for (let i = 1; i <= data.numPages; i++) {
-            await data.getPage(i).then(async (page) => {
-                await page.getTextContent().then((content) => {
-                    if (content.items.length === 0) return;
+            let page = await data.getPage(i);
+            let content = await page.getTextContent();
 
-                    let pageText = content.items[0].str.toLowerCase();
+            if (content.items.length === 0) {
+                documentContent.push("");
+                continue;
+            }
 
-                    for (let j = 1; j < content.items.length; j++) {
-                        let currentY = content.items[j].transform[5];
-                        let previousY = content.items[j-1].transform[5];
-                        if (currentY != previousY) pageText += '\n';
+            let pageText = content.items[0].str.toLowerCase();
 
-                        pageText += content.items[j].str.toLowerCase();
-                    }
+            for (let j = 1; j < content.items.length; j++) {
+                let currentY = content.items[j].transform[5];
+                let previousY = content.items[j-1].transform[5];
+                if (currentY != previousY) pageText += '\n';
 
-                    documentContent.push(pageText);
-                }).catch((error) => {
-                    console.log(error);
-                })
-            }).catch((error) => {
-                console.log(`error getting page ${i}`)
-            })
-        }
+                pageText += content.items[j].str.toLowerCase();
+            }
 
-        try {
-            let  = await client.index({
-                index: process.env.ELASTIC_INDEX_NAME,
-                id: CryptoJS.SHA256(pdfFileName).toString(),
-                body: {
-                    name: pdfFileName,
-                    content: documentContent,
-                    date: documentDate
-                }
-            });
-    
-            await client.indices.refresh({
-                index: process.env.ELASTIC_INDEX_NAME
-            });
-            
-            console.log(`successfully added document: ${pdfFileName}`)
-        } catch (error) {
-            console.log(error)
+            documentContent.push(pageText);
         }
         
-    }).catch((error) => {
-        console.log(`error reading pdf ${pdfFileName}`)
-    }); 
+        await client.index({
+            index: process.env.ELASTIC_INDEX_NAME,
+            id: CryptoJS.SHA256(pdfFileName).toString(),
+            body: {
+                name: pdfFileName,
+                content: documentContent,
+                date: documentDate,
+                driveFileID: driveFileID
+            }
+        });
+
+        await client.indices.refresh({
+            index: process.env.ELASTIC_INDEX_NAME
+        });
+        
+        console.log(`successfully added document: ${pdfFileName}`);
+    } catch (error) {
+        console.log(error);
+        console.log(`error indexing document: ${pdfFileName}`)
+    }
 }
 
 indexFromDrive();

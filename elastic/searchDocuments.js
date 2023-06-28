@@ -36,4 +36,4 @@ async function searchDocuments(query) {
     console.log(result.hits.hits);
 }
 
-searchDocuments("Following the presentations, members of the Gulf Coast Hurricanes Work Group provided the Executive")
+searchDocuments("epa")

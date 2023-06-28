@@ -5,7 +5,7 @@ const performSearch = async () => {
     searchQuery = document.getElementById("searchInput").value;
 
     // Display loading spinner
-    document.getElementById("searchResults").innerHTML = '<div class="spinner-border text-center" role="status"></div>';
+    document.getElementById("searchResults").innerHTML = "<div class='spinner-border text-center' role='status'></div>";
     let response = await fetch(`http://localhost:5000/search?query=${searchQuery}`);
     let data = await response.json();
     console.log(data);
@@ -14,10 +14,10 @@ const performSearch = async () => {
 
     let searchResultsContainer = document.getElementById("searchResults");
 
-    // if (searchResults.length === 0) {
-    //     searchResultsContainer.innerHTML = `<p>No results found for ${searchQuery}.</p>`;
-    //     return;
-    // }
+    if (searchResults.length === 0) {
+        searchResultsContainer.innerHTML = `<p>No results found for ${searchQuery}.</p>`;
+        return;
+    }
 
     searchResultsContainer.innerHTML = "<p>Showing results for: " + searchQuery + "</p>";
 
@@ -34,7 +34,7 @@ const displaySearchResults = () => {
     // build the dropdown
     let dropdownDiv = document.createElement("div");
     dropdownDiv.classList.add("dropdown");
-    dropdownDiv.innerHTML = '<button class="btn btn-secondary dropdown-toggle ml-auto" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sort By</button>';
+    dropdownDiv.innerHTML = "<button class='btn btn-secondary dropdown-toggle ml-auto' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Sort By</button>";
 
     let dropdownMenu = document.createElement("div");
     dropdownMenu.classList.add("dropdown-menu");
@@ -80,24 +80,22 @@ const displaySearchResults = () => {
         let buttonGroup = document.createElement("span");
         buttonGroup.classList.add("btn-group", "btn-group-sm");
 
-        let viewButton = document.createElement("button");
-        viewButton.classList.add("btn", "btn-outline-primary");
-        // viewButton.innerHTML = '<i class="bi bi-eye"></i>';
-        viewButton.innerHTML = 'View';
+        let viewHitsButton = document.createElement("button");
+        viewHitsButton.classList.add("btn", "btn-outline-primary");
+        viewHitsButton.innerHTML = "View page hits";
     
-        let downloadButton = document.createElement("button");
-        downloadButton.classList.add("btn", "btn-outline-primary");
-        // downloadButton.innerHTML = '<i class="bi bi-download"></i>';
-        downloadButton.innerHTML = 'Download';
+        let viewPDFButton = document.createElement("button");
+        viewPDFButton.classList.add("btn", "btn-outline-primary");
+        viewPDFButton.innerHTML = "View PDF";
 
-        viewButton.onclick = (event) => {showPDFModal(result._source.name, result.pageHits)}
-        viewButton.setAttribute("data-toggle", "modal");
-        viewButton.setAttribute("data-target", "resultModal");
+        viewHitsButton.onclick = (event) => {showPDFModal(result._source.name, result.pageHits)}
+        viewHitsButton.setAttribute("data-toggle", "modal");
+        viewHitsButton.setAttribute("data-target", "resultModal");
 
-        downloadButton.onclick = (event) => {downloadPDF(result._source.name)}
+        viewPDFButton.onclick = (event) => {viewPDF(result._source.name)}
 
-        buttonGroup.appendChild(viewButton);
-        buttonGroup.appendChild(downloadButton);
+        buttonGroup.appendChild(viewHitsButton);
+        buttonGroup.appendChild(viewPDFButton);
 
         let occurrencesText = document.createElement("p");
         occurrencesText.classList.add("mb-1");
@@ -168,7 +166,7 @@ const showPDFModal = async (pdfFileName, pageHits) => {
 
     let requestOptions = {
         method: "POST",
-        headers: {'Content-Type': 'application/json'},
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({pdfFileName, pageHits})
     }
 
@@ -222,11 +220,11 @@ const showPDFModal = async (pdfFileName, pageHits) => {
         // });
     });
 
-    eventBus.on('pagesloaded', function() {
-        console.log('All pages have been loaded');
+    eventBus.on("pagesloaded", function() {
+        console.log("All pages have been loaded");
     });
 
-    // eventBus.on('pagerendered', function(event) {
+    // eventBus.on("pagerendered", function(event) {
     //     const { pageNumber } = event;
     //     console.log(`Page ${pageNumber} has been rendered`);
     // });
