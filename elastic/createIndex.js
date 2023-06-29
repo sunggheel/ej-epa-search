@@ -45,6 +45,14 @@ const createIndex = async () => {
                             type: "keyword"
                         }
                     }
+                },
+                driveFileID: {
+                    type: "text",
+                    fields: {
+                        keyword: {
+                            type: "keyword"
+                        }
+                    }
                 }
             }
         }

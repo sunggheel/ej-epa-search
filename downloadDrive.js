@@ -9,7 +9,7 @@ const { Client } = require('@elastic/elasticsearch');
 
 const {google} = require('googleapis');
 
-// 'use strict'
+'use strict'
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -22,10 +22,6 @@ const client = new Client({
     }
 });
 
-// const auth = new GoogleAuth({
-//     scopes: 'https://www.googleapis.com/auth/drive',
-// });
-
 
 const drive = google.drive({
     version: "v3",
@@ -33,7 +29,19 @@ const drive = google.drive({
 });
 
 async function indexFromDrive() {
+    // get already indexed files
+    let result = await client.search({
+        index: process.env.ELASTIC_INDEX_NAME,
+        body: {
+            size: 100,
+            query: {
+                match_all: {}
+            }
+        }
+    });
+    let existingFiles = new Set(result.hits.hits.map((a) => {return a._source.name}));
 
+    // read dates from spreadsheet
     let datesObj = await readDatesFromSheet();
 
     // get files list from folder
@@ -41,11 +49,22 @@ async function indexFromDrive() {
     let data = await response.json();
 
     for (let file of data.items) {
+        // make sure its a pdf file
         if (file.kind !== "drive#file") continue;
         if (file.mimeType !== "application/pdf") continue;
+
+        // make sure its in the spreadsheet
         if (!datesObj.hasOwnProperty(file.title)) {
             console.log(`Document not in spreadsheet: ${file.title}`);
             continue;
+        }
+
+        // make sure its not already indexed
+        if (existingFiles.has(file.title)) {
+            console.log(`Document already indexed: ${file.title}`);
+            continue;
+        } else {
+            console.log(`Document not indexed: ${file.title}`);
         }
 
         let buffer = await downloadPDF(file.id);
