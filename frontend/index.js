@@ -92,7 +92,7 @@ const displaySearchResults = () => {
         viewHitsButton.setAttribute("data-toggle", "modal");
         viewHitsButton.setAttribute("data-target", "resultModal");
 
-        viewPDFButton.onclick = (event) => {viewPDF(result._source.name)}
+        viewPDFButton.onclick = (event) => {viewPDF(result._source.driveFileID)}
 
         buttonGroup.appendChild(viewHitsButton);
         buttonGroup.appendChild(viewPDFButton);
@@ -238,21 +238,26 @@ const showPDFModal = async (pdfFileName, pageHits) => {
     modal.show();
 }
 
-const downloadPDF = async (pdfFileName) => {
-    let response = await fetch(`http://localhost:5000/pdf?pdfFileName=${pdfFileName}`);
-    let blobData = await response.blob();
+// const downloadPDF = async (pdfFileName) => {
+//     let response = await fetch(`http://localhost:5000/pdf?pdfFileName=${pdfFileName}`);
+//     let blobData = await response.blob();
 
-    if (!blobData) return;
+//     if (!blobData) return;
 
-    let url = URL.createObjectURL(blobData);
+//     let url = URL.createObjectURL(blobData);
 
-    let link = document.createElement("a");
-    link.href = url;
-    link.download = pdfFileName;
+//     let link = document.createElement("a");
+//     link.href = url;
+//     link.download = pdfFileName;
 
-    link.click();
+//     link.click();
     
-    URL.revokeObjectURL(url);
+//     URL.revokeObjectURL(url);
+// }
+
+const viewPDF = (driveFileID) => {
+    console.log(`https://drive.google.com/file/d/${driveFileID}/view`)
+    window.open(`https://drive.google.com/file/d/${driveFileID}/view`, "_blank");
 }
 
 document.getElementById("searchButton").addEventListener("click", performSearch);
