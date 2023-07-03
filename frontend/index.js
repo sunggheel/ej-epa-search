@@ -8,7 +8,7 @@ const performSearch = async () => {
     document.getElementById("searchResults").innerHTML = "<div class='spinner-border text-center' role='status'></div>";
     let response = await fetch(`http://localhost:5000/search?query=${searchQuery}`);
     let data = await response.json();
-    console.log(data);
+    // console.log(data);
 
     searchResults = data;
 
@@ -88,7 +88,7 @@ const displaySearchResults = () => {
         viewPDFButton.classList.add("btn", "btn-outline-primary");
         viewPDFButton.innerHTML = "View PDF";
 
-        viewHitsButton.onclick = (event) => {showPDFModal(result._source.name, result.pageHits)}
+        viewHitsButton.onclick = (event) => {showPDFModal(result._source.driveFileID, result.pageHits)}
         viewHitsButton.setAttribute("data-toggle", "modal");
         viewHitsButton.setAttribute("data-target", "resultModal");
 
@@ -151,6 +151,7 @@ const sortResultsByDate = (direction) => {
             return 0;
         }
         
+        // format is [MM, DD, YYYY]
         // start comparing from YYYY, then MM, then DD
         for (let i of [2,0,1]) {
             if (aDateArray[i] !== bDateArray[i]) return direction * (aDateArray[i] - bDateArray[i]);
@@ -162,18 +163,18 @@ const sortResultsByDate = (direction) => {
     displaySearchResults();
 }
 
-const showPDFModal = async (pdfFileName, pageHits) => {
+const showPDFModal = async (driveFileID, pageHits) => {
 
     let requestOptions = {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({pdfFileName, pageHits})
+        body: JSON.stringify({driveFileID, pageHits})
     }
 
     let response = await fetch(`http://localhost:5000/pdf`, requestOptions);
-    let data = await response.json();
+    let data = await response.arrayBuffer();
 
-    let pdfBytes = data.data;
+    let pdfBytes = data;
 
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.7.107/pdf.worker.min.js"

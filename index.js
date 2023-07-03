@@ -1,9 +1,12 @@
 const express = require("express");
 const path = require("path");
-const fs = require('fs');
 const dotenv = require("dotenv");
 dotenv.config();
+
 const elasticUtils = require("./elastic");
+
+const driveUtils = require("./drive");
+
 const { PDFDocument } = require('pdf-lib');
 
 const app = express();
@@ -54,27 +57,27 @@ app.get("/search", async (req, res) => {
     }
 });
 
-app.get("/pdf", async (req, res) => {
-    try {
-        let pdfFileName = req.query.pdfFileName;
+// app.get("/pdf", async (req, res) => {
+//     try {
+//         let pdfFileName = req.query.pdfFileName;
 
-        let pdfFileBytes = fs.readFileSync(`pdfs/${pdfFileName}`);
+//         let pdfFileBytes = fs.readFileSync(`pdfs/${pdfFileName}`);
 
-        res.set('Content-Disposition', `attachment; filename="pdf/${pdfFileName}"`);
-        res.set('Content-Type', 'application/pdf');
-        res.send(pdfFileBytes);
-    } catch (error) {
-        console.log(error);
-        return res.status(400).json();
-    }
-});
+//         res.set('Content-Disposition', `attachment; filename="pdf/${pdfFileName}"`);
+//         res.set('Content-Type', 'application/pdf');
+//         res.send(pdfFileBytes);
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(400).json();
+//     }
+// });
 
 app.post("/pdf", async (req, res) => {
     try {
-        let pdfFileName = req.body.pdfFileName;
+        let driveFileID = req.body.driveFileID;
         let pageHits = req.body.pageHits;
-    
-        const existingPdfBytes = fs.readFileSync(`pdfs/${pdfFileName}`);
+
+        const existingPdfBytes = await driveUtils.downloadPDF(driveFileID);
     
         const newPdfDoc = await PDFDocument.create();
     
@@ -86,8 +89,9 @@ app.post("/pdf", async (req, res) => {
         }
     
         const newPdfBytes = await newPdfDoc.save();
-        
-        return res.status(200).json(Buffer.from(newPdfBytes));
+        res.set('Content-Disposition', `attachment; filename="${driveFileID}"`);
+        res.set('Content-Type', 'application/pdf');
+        return res.status(200).send(Buffer.from(newPdfBytes))
 
     } catch (error) {
         console.log(error);
