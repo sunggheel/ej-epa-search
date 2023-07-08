@@ -15,3 +15,8 @@ mark {
     flex-direction: column;
     align-items: center;
 }
+
+.nav-bg {
+    /* background-image: url("./assets/edgi_bg.jpg"); */
+    width: 100%;
+}
