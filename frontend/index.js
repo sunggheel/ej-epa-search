@@ -1,25 +1,31 @@
 let searchQuery = "";
 let searchResults = [];
+let collectionSelector = "all-collections";
+
+const SORT_DIRECTIONS = { ASCENDING: 1, DESCENDING: -1 }
 
 const performSearch = async () => {
     searchQuery = document.getElementById("searchInput").value;
 
     // Display loading spinner
     document.getElementById("searchResults").innerHTML = "<div class='spinner-border text-center' role='status'></div>";
-    let response = await fetch(`http://localhost:5000/search?query=${searchQuery}`);
-    let data = await response.json();
-    // console.log(data);
-
-    searchResults = data;
-
-    let searchResultsContainer = document.getElementById("searchResults");
-
-    if (searchResults.length === 0) {
-        searchResultsContainer.innerHTML = `<p>No results found for ${searchQuery}.</p>`;
+    
+    try {
+        let response = await fetch(`http://localhost:5000/search?query=${searchQuery}`);
+        searchResults = await response.json();
+    } catch (error) {
+        console.error("couldnt fetch search results");
         return;
-    }
+    } finally {
+        let searchResultsContainer = document.getElementById("searchResults");
 
-    searchResultsContainer.innerHTML = "<p>Showing results for: " + searchQuery + "</p>";
+        if (searchResults.length === 0) {
+            searchResultsContainer.innerHTML = `<p>No results found for ${searchQuery}.</p>`;
+            return;
+        }
+    
+        searchResultsContainer.innerHTML = "<p>Showing results for: " + searchQuery + "</p>";
+    }
 
     displaySearchResults();
 }
@@ -31,7 +37,7 @@ const displaySearchResults = () => {
     let resultList = document.createElement("ul");
     resultList.classList.add("list-group");
 
-    // build the dropdown
+    // build the sort dropdown
     let dropdownDiv = document.createElement("div");
     dropdownDiv.classList.add("dropdown");
     dropdownDiv.innerHTML = "<button class='btn btn-secondary dropdown-toggle ml-auto' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Sort By</button>";
@@ -42,22 +48,22 @@ const displaySearchResults = () => {
     let sortByOccurrencesASCButton = document.createElement("button");
     sortByOccurrencesASCButton.classList.add("dropdown-item");
     sortByOccurrencesASCButton.innerHTML = "Search word occurrences ASC";
-    sortByOccurrencesASCButton.onclick = () => {sortResultsByOccurrences(1)}
+    sortByOccurrencesASCButton.onclick = () => {sortResultsByOccurrences(SORT_DIRECTIONS.ASCENDING)}
 
     let sortByOccurrencesDESCButton = document.createElement("button");
     sortByOccurrencesDESCButton.classList.add("dropdown-item");
     sortByOccurrencesDESCButton.innerHTML = "Search word occurrences DESC";
-    sortByOccurrencesDESCButton.onclick = () => {sortResultsByOccurrences(-1)}
+    sortByOccurrencesDESCButton.onclick = () => {sortResultsByOccurrences(SORT_DIRECTIONS.DESCENDING)}
 
     let sortByDateASCButton = document.createElement("button");
     sortByDateASCButton.classList.add("dropdown-item");
     sortByDateASCButton.innerHTML = "Document date ASC";
-    sortByDateASCButton.onclick = () => {sortResultsByDate(1)}
+    sortByDateASCButton.onclick = () => {sortResultsByDate(SORT_DIRECTIONS.ASCENDING)}
 
     let sortByDateDESCButton = document.createElement("button");
     sortByDateDESCButton.classList.add("dropdown-item");
     sortByDateDESCButton.innerHTML = "Document date DESC";
-    sortByDateDESCButton.onclick = () => {sortResultsByDate(-1)}
+    sortByDateDESCButton.onclick = () => {sortResultsByDate(SORT_DIRECTIONS.DESCENDING)}
 
     dropdownMenu.appendChild(sortByOccurrencesASCButton);
     dropdownMenu.appendChild(sortByOccurrencesDESCButton);
@@ -267,3 +273,14 @@ document.getElementById("searchInput").addEventListener("keydown", (event) => {
         performSearch();
     }
 });
+
+["all-collections", "nejac-minutes", "epa-budget-justifications", "collection-3"].forEach((indexName) => {
+    let selectorID = `${indexName}-selector`;
+    let dropdownSelectorButton = document.getElementById(selectorID);
+
+    dropdownSelectorButton.onclick = () => {
+        collectionSelector = indexName;
+        document.getElementById("collectionDropdownMenuButton").innerHTML = dropdownSelectorButton.innerHTML;
+    }
+    
+})

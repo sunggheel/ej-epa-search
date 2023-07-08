@@ -27,20 +27,30 @@
         <script defer src="./index.js"></script>
     </head>
     <body>
-        <!-- <div class="mt-4" style="margin-left: 20px;"><input type="file" id="uploadInput" class="form-control-file" accept=".pdf" /><button class="btn btn-primary mt-2" type="button" id="uploadButton">Upload</button></div> -->
         <div class="container custom-container">
             <div class="row">
                 <div class="col-md-6 offset-md-3 mt-5">
                     <h1 class="text-center mb-4">
-                        Minutes of the National Environmental Advisory Council A Keyword-Searchable Database.
+                        A Keyword-Searchable Database for EPA related documents.
                     </h1>
                     <p class="text-center mb-4">
-                        Since its creation in 1993, the National Environmental Justice Advisory Council (NEJAC) has provided a formal platform for voicing dilemmas and concerns relating to environmental justice to officials at the U.S. Environmental Protection Agency.  Created in response to the rise of the environmental justice movement, the goals of NEJAC are to enable direct communication between this agency and stakeholders in environmental justice communities and to help the EPA integrate these concerns into its regulatory work. This search tool provides a keyword search of all the minutes of NEJAC meetings posted on EPA’s website from 1994 to the present.  Users may quickly comb through the decades of NEJAC deliberations for participants, places, topics, and themes mentioned in NEJAC minutes.  They can also then download pdfs of relevant meeting notes.  
+                        Welcome to our searchable collections of EPA and EPA-related documents, now available for public use.  While the agency makes many records of its proceedings and operations publicly available, documents outside formal publications are almost never made searchable. The collections and search engine available via this webpage seek to fill this gap in accessibility.
                     </p>
                     <div class="input-group">
                         <input type="text" id="searchInput" class="form-control" placeholder="Enter your search query" />
                         <div class="input-group-append">
                             <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="collectionDropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                All collections
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <button id="all-collections-selector" class="dropdown-item">All collections</button>
+                                <button id="nejac-minutes-selector" class="dropdown-item">NEJAC minutes</button>
+                                <button id="epa-budget-justifications-selector" class="dropdown-item">EPA budget justifications</button>
+                                <button id="collection-3-selector" class="dropdown-item">Collection 3</button>
+                            </div>
                         </div>
                     </div>
                     <div id="searchResults" class="mt-4 text-center"></div>

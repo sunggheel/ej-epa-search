@@ -57,21 +57,6 @@ app.get("/search", async (req, res) => {
     }
 });
 
-// app.get("/pdf", async (req, res) => {
-//     try {
-//         let pdfFileName = req.query.pdfFileName;
-
-//         let pdfFileBytes = fs.readFileSync(`pdfs/${pdfFileName}`);
-
-//         res.set('Content-Disposition', `attachment; filename="pdf/${pdfFileName}"`);
-//         res.set('Content-Type', 'application/pdf');
-//         res.send(pdfFileBytes);
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(400).json();
-//     }
-// });
-
 app.post("/pdf", async (req, res) => {
     try {
         let driveFileID = req.body.driveFileID;
@@ -97,8 +82,6 @@ app.post("/pdf", async (req, res) => {
         console.log(error);
         return res.status(400).json();
     }
-
-
 });
 
 // Serve static frontend app
