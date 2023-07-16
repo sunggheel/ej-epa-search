@@ -1,10 +1,8 @@
 const dotenv = require("dotenv")
 dotenv.config();
 
-const { Client } = require('@elastic/elasticsearch')
-
-
-'use strict'
+const { Client } = require('@elastic/elasticsearch');
+const indexIterator = require("./indexIterator");
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -17,22 +15,22 @@ const client = new Client({
     }
 });
 
-async function countDocuments() {
+async function countDocuments(indexName) {
     try {
         let result = await client.count({
-            index: process.env.ELASTIC_INDEX_NAME
+            index: indexName
         });
 
-        console.log(`Number of documents in ${process.env.ELASTIC_INDEX_NAME}: ${result.count}`);
+        console.log(`Number of documents in ${indexName}: ${result.count}`);
     } catch (error) {
-        console.log("Couldnt count documents")
+        console.log("Couldnt count documents");
     }
 }
 
-async function countDocuments2() {
+async function countDocuments2(indexName) {
     try {
         let result = await client.search({
-            index: process.env.ELASTIC_INDEX_NAME,
+            index: indexName,
             body: {
                 size: 100,
                 query: {
@@ -41,11 +39,11 @@ async function countDocuments2() {
             }
         });
 
-        console.log(`Number of documents in ${process.env.ELASTIC_INDEX_NAME}: ${result.hits.hits.length}`);
+        console.log(`Number of documents in ${indexName}: ${result.hits.hits.length}`);
     } catch (error) {
-        console.log("Couldnt count documents")
+        console.log("Couldnt count documents");
     }
 }
 
-countDocuments();
-countDocuments2();
+indexIterator(countDocuments);
+// indexIterator(countDocuments2);

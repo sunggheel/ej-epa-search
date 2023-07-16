@@ -2,13 +2,12 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const CryptoJS = require('crypto-js');
+const indexIterator = require("./indexIterator");
 
 const fs = require("fs");
 const PDFJS = require('pdfjs-dist');
 
 const { Client } = require('@elastic/elasticsearch');
-
-// 'use strict'
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -21,12 +20,12 @@ const client = new Client({
     }
 });
 
-let datesJSONString = fs.readFileSync("dates.json");
+let datesJSONString = fs.readFileSync("pdfs/nejac-minutes-dates.json");
 let datesObj = JSON.parse(datesJSONString);
 
-const add = async (pdfFileName) => {
+const add = async (collectionName, pdfFileName) => {
     try {
-        await PDFJS.getDocument(`pdfs/${pdfFileName}`).promise.then(async (data) => {
+        await PDFJS.getDocument(`pdfs/${collectionName}/${pdfFileName}`).promise.then(async (data) => {
             let documentContent = [];
             for (let i = 1; i <= data.numPages; i++) {
                 await data.getPage(i).then(async (page) => {
@@ -54,7 +53,7 @@ const add = async (pdfFileName) => {
 
             try {
                 let  = await client.index({
-                    index: process.env.ELASTIC_INDEX_NAME,
+                    index: collectionName,
                     id: CryptoJS.SHA256(pdfFileName).toString(),
                     body: {
                         name: pdfFileName,
@@ -64,7 +63,7 @@ const add = async (pdfFileName) => {
                 });
         
                 await client.indices.refresh({
-                    index: process.env.ELASTIC_INDEX_NAME
+                    index: collectionName
                 });
             } catch (error) {
                 console.log(error)
@@ -79,9 +78,9 @@ const add = async (pdfFileName) => {
     }
 }
 
-async function addAll() {
+async function addAll(collectionName) {
     let result = await client.search({
-        index: process.env.ELASTIC_INDEX_NAME,
+        index: collectionName,
         body: {
             size: 100,
             query: {
@@ -90,12 +89,12 @@ async function addAll() {
         }
     });
 
-    let documentNameSet = new Set();
+    let indexedDocuments = new Set();
     for (let i = 0; i < result.hits.hits.length; i++) {
-        documentNameSet.add(result.hits.hits[i]._source.name)
+        indexedDocuments.add(result.hits.hits[i]._source.name);
     }
     
-    let pdfDocuments = fs.readdirSync("pdfs");
+    let pdfDocuments = fs.readdirSync(`pdfs/${collectionName}`);
     pdfDocuments.sort();
     
     for (let pdfFileName of pdfDocuments) {
@@ -104,13 +103,13 @@ async function addAll() {
             continue;
         }
 
-        if (documentNameSet.has(pdfFileName)) {
+        if (indexedDocuments.has(pdfFileName)) {
             console.log(`document already indexed: ${pdfFileName}`)
             continue;
         }
         
-        await add(pdfFileName);
+        await add(collectionName, pdfFileName);
     }
 }
 
-addAll();
+indexIterator(addAll);

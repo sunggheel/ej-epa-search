@@ -22,9 +22,18 @@ app.listen(PORT, () => {
 
 app.get("/search", async (req, res) => {
     try {
+        let indexNames = [req.query.indexName];
+
+        if (req.query.indexName === "all") {
+            indexNames = [
+                process.env.NEJAC_MINUTES_INDEX_NAME,
+                process.env.EPA_BUDGET_JUSTIFICATIONS_INDEX_NAME
+            ];
+        }
+        
         let searchQuery = req.query.query;
 
-        let response = await elasticUtils.search(searchQuery);
+        let response = await elasticUtils.search(indexNames, searchQuery);
 
         const countOccurrences = (mainString, searchString) => {
             return mainString.toLowerCase().split(searchString.toLowerCase()).length - 1;
@@ -85,9 +94,11 @@ app.post("/pdf", async (req, res) => {
 });
 
 // Serve static frontend app
-app.use(express.static(path.join(__dirname, "frontend/")));
-
+// app.use(express.static(path.join(__dirname, "frontend/")));
 // if it doesnt match send index.html
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname + "/frontend/index.html"));
-});
+// app.get("*", (req, res) => {
+//     res.sendFile(path.join(__dirname + "/frontend/index.html"));
+// });
+
+// let millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000
+// setInterval(driveUtils.indexFromDrive, millisecondsPerWeek);

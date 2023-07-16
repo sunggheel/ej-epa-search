@@ -1,9 +1,7 @@
 const dotenv = require("dotenv")
 dotenv.config();
 
-const { Client } = require('@elastic/elasticsearch')
-
-'use strict'
+const { Client } = require('@elastic/elasticsearch');
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -16,24 +14,53 @@ const client = new Client({
     }
 });
 
-async function search(query) {
-    const result = await client.search({
-        index: process.env.ELASTIC_INDEX_NAME,
-        body: {
-            query: {
-                match_phrase: {
-                    content: query
-                }
-            },
-            highlight: {
-                fields: {
-                    content: {}
-                }
-            }
-        }
-    });
+// async function search(query) {
+//     const result = await client.search({
+//         index: process.env.ELASTIC_INDEX_NAME,
+//         body: {
+//             query: {
+//                 match_phrase: {
+//                     "content": query
+//                 }
+//             },
+//             highlight: {
+//                 fields: {
+//                     "content": {},
+//                 }
+//             }
+//         }
+//     });
 
-    return result.hits.hits;
+//     return result.hits.hits;
+// }
+
+async function search(indexNames, query) {
+    try {
+        let results = [];
+        for (let indexName of indexNames) {
+            const result = await client.search({
+                index: indexName,
+                body: {
+                    query: {
+                        match_phrase: {
+                            content: query
+                        }
+                    },
+                    highlight: {
+                        fields: {
+                            content: {type: "fvh"}
+                        }
+                    }
+                }
+            });
+    
+            results.push(result.hits.hits);
+        }
+        
+        return results;
+    } catch (error) {
+        
+    }
 }
 
 module.exports = {

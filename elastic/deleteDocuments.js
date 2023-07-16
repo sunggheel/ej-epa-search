@@ -1,10 +1,8 @@
 const dotenv = require("dotenv")
 dotenv.config();
 
-const { Client } = require('@elastic/elasticsearch')
-
-
-'use strict'
+const { Client } = require('@elastic/elasticsearch');
+const indexIterator = require("./indexIterator");
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -17,10 +15,10 @@ const client = new Client({
     }
 });
 
-async function deleteAllDocuments() {
+async function deleteAllDocuments(indexName) {
     try {
         await client.deleteByQuery({
-            index: process.env.ELASTIC_INDEX_NAME,            
+            index: indexName,            
             body: {
                 query: {
                     match_all: {}
@@ -34,4 +32,4 @@ async function deleteAllDocuments() {
     }
 }
 
-deleteAllDocuments();
+indexIterator(deleteAllDocuments);

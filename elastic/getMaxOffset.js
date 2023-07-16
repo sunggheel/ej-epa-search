@@ -2,8 +2,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const { Client } = require('@elastic/elasticsearch');
-
-// 'use strict'
+const indexIterator = require("./indexIterator");
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -16,12 +15,12 @@ const client = new Client({
     }
 });
 
-const getMaxOffset = async () => {
+const getMaxOffset = async (indexName) => {
     try {
         let result = await client.indices.getSettings({
-            index: process.env.ELASTIC_INDEX_NAME
+            index: indexName
         });
-        const maxAnalyzedOffset = result[process.env.ELASTIC_INDEX_NAME].settings.index;
+        const maxAnalyzedOffset = result[indexName].settings.index;
 
         console.log('highlight.max_analyzed_offset:', maxAnalyzedOffset);
     } catch (error) {
@@ -29,4 +28,4 @@ const getMaxOffset = async () => {
     }
 }
 
-getMaxOffset()
+indexIterator(getMaxOffset)

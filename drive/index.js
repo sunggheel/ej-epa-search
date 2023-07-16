@@ -7,7 +7,7 @@ const PDFJS = require('pdfjs-dist');
 
 const { Client } = require('@elastic/elasticsearch');
 
-const {google} = require('googleapis');
+const { google } = require('googleapis');
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -27,9 +27,24 @@ const drive = google.drive({
 });
 
 async function indexFromDrive() {
+    await indexCollection(
+        process.env.NEJAC_MINUTES_INDEX_NAME,
+        process.env.NEJAC_MINUTES_FOLDER_ID,
+        process.env.NEJAC_MINUTES_SHEET_ID
+    );
+
+    await indexCollection(
+        process.env.EPA_BUDGET_JUSTIFICATIONS_INDEX_NAME,
+        process.env.EPA_BUDGET_JUSTIFICATIONS_FOLDER_ID,
+        process.env.EPA_BUDGET_JUSTIFICATIONS_SHEET_ID
+    );
+
+}
+
+async function indexCollection(collectionName, folderID, sheetID) {
     // get already indexed files
     let result = await client.search({
-        index: process.env.ELASTIC_INDEX_NAME,
+        index: collectionName,
         body: {
             size: 100,
             query: {
@@ -40,10 +55,10 @@ async function indexFromDrive() {
     let existingFiles = new Set(result.hits.hits.map((a) => {return a._source.name}));
 
     // read dates from spreadsheet
-    let datesObj = await readDatesFromSheet();
+    let datesObj = await readDatesFromSheet(sheetID);
 
     // get files list from folder
-    let response = await fetch(`https://www.googleapis.com/drive/v2/files?q='${process.env.NEJAC_MINUTES_FOLDER_ID}'+in+parents&key=${process.env.GOOGLE_API_KEY}`);
+    let response = await fetch(`https://www.googleapis.com/drive/v2/files?q='${folderID}'+in+parents&key=${process.env.GOOGLE_API_KEY}`);
     let data = await response.json();
 
     for (let file of data.items) {
@@ -66,14 +81,17 @@ async function indexFromDrive() {
         }
 
         let buffer = await downloadPDF(file.id);
+
+        console.log("downloaded pdf file");
+        
         let arr = buffer.buffer;
 
-        indexDocument(file.title, file.id, arr, datesObj[file.title]);
+        await indexDocument(collectionName, file.title, file.id, arr, datesObj[file.title]);
     }
 }
 
-async function readDatesFromSheet() {
-    let response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${process.env.NEJAC_MINUTES_DATES_SHEET_ID}/values/A1:B100?key=${process.env.GOOGLE_API_KEY}`);
+async function readDatesFromSheet(sheetID) {
+    let response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/A1:B100?key=${process.env.GOOGLE_API_KEY}`);
     let data = await response.json();
 
     let sheetValues = data.values;
@@ -98,7 +116,7 @@ async function downloadPDF(fileID) {
     return Buffer.concat(chunks);
 }
 
-async function indexDocument(pdfFileName, driveFileID, arr, documentDate) {
+async function indexDocument(collectionName, pdfFileName, driveFileID, arr, documentDate) {
     try {
         console.log(`indexing doc: ${pdfFileName}`);
 
@@ -127,7 +145,7 @@ async function indexDocument(pdfFileName, driveFileID, arr, documentDate) {
         }
         
         await client.index({
-            index: process.env.ELASTIC_INDEX_NAME,
+            index: collectionName,
             id: CryptoJS.SHA256(pdfFileName).toString(),
             body: {
                 name: pdfFileName,
@@ -138,7 +156,7 @@ async function indexDocument(pdfFileName, driveFileID, arr, documentDate) {
         });
 
         await client.indices.refresh({
-            index: process.env.ELASTIC_INDEX_NAME
+            index: collectionName
         });
         
         console.log(`successfully added document: ${pdfFileName}`);

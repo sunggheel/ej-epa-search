@@ -1,10 +1,8 @@
 const dotenv = require("dotenv")
 dotenv.config();
 
-const { Client } = require('@elastic/elasticsearch')
-
-
-'use strict'
+const { Client } = require('@elastic/elasticsearch');
+const indexIterator = require("./indexIterator");
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -17,7 +15,7 @@ const client = new Client({
     }
 });
 
-const createIndex = async () => {
+const createIndex = async (indexName) => {
     try {
         let mappings = {
             properties: {
@@ -58,16 +56,16 @@ const createIndex = async () => {
         }
 
         await client.indices.create({
-            index: process.env.ELASTIC_INDEX_NAME,
+            index: indexName,
             body: {
                 mappings
             }
         })
     
-        console.log("successfully created index")
+        console.log(`successfully created index: ${indexName}`)
     } catch(error) {
         console.log("couldnt create index")
     }
 }
 
-createIndex();
+indexIterator(createIndex);

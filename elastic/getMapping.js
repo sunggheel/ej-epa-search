@@ -2,8 +2,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const { Client } = require('@elastic/elasticsearch');
-
-// 'use strict'
+const indexIterator = require("./indexIterator");
 
 const client = new Client({
     node: process.env.ELASTIC_URL,
@@ -16,15 +15,17 @@ const client = new Client({
     }
 });
 
-const getMapping = async () => {
+const getMapping = async (indexName) => {
     try {
         let result = await client.indices.getMapping({
-            index: process.env.ELASTIC_INDEX_NAME
+            index: indexName
         });
-        console.log(result[process.env.ELASTIC_INDEX_NAME].mappings.properties);
+        console.log(`${indexName} mapping:`);
+        console.log(result[indexName].mappings.properties);
+        console.log();
     } catch (error) {
         console.log("couldnt get mapping")
     }
 }
 
-getMapping()
+indexIterator(getMapping);
