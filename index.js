@@ -22,18 +22,20 @@ app.listen(PORT, () => {
 
 app.get("/api/search", async (req, res) => {
     try {
-        let indexNames = [req.query.indexName];
+        let collectionNames = [req.query.collectionName];
 
-        if (req.query.indexName === "all") {
-            indexNames = [
+        if (req.query.collectionName === "all-collections") {
+            collectionNames = [
                 process.env.NEJAC_MINUTES_INDEX_NAME,
                 process.env.EPA_BUDGET_JUSTIFICATIONS_INDEX_NAME
             ];
         }
+
+        console.log(collectionNames)
         
         let searchQuery = req.query.query;
 
-        let response = await elasticUtils.search(indexNames, searchQuery);
+        let response = await elasticUtils.search(collectionNames, searchQuery);
 
         const countOccurrences = (mainString, searchString) => {
             return mainString.toLowerCase().split(searchString.toLowerCase()).length - 1;

@@ -5,7 +5,7 @@ const apiUrl = `${baseUrl}/api`;
 
 let searchQuery = "";
 let searchResults = [];
-let collectionSelector = "all-collections";
+let collectionName = "all-collections";
 
 const SORT_DIRECTIONS = { ASCENDING: 1, DESCENDING: -1 }
 
@@ -16,7 +16,7 @@ const performSearch = async () => {
     document.getElementById("searchResults").innerHTML = "<div class='spinner-border text-center' role='status'></div>";
     
     try {
-        let response = await fetch(`${apiUrl}/search?query=${searchQuery}`);
+        let response = await fetch(`${apiUrl}/search?query=${searchQuery}&collectionName=${collectionName}`);
         searchResults = await response.json();
     } catch (error) {
         console.error("couldnt fetch search results");
@@ -284,7 +284,7 @@ document.getElementById("searchInput").addEventListener("keydown", (event) => {
     let dropdownSelectorButton = document.getElementById(selectorID);
 
     dropdownSelectorButton.onclick = () => {
-        collectionSelector = indexName;
+        collectionName = indexName;
         document.getElementById("collectionDropdownMenuButton").innerHTML = dropdownSelectorButton.innerHTML;
     }
     
