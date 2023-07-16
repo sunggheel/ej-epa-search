@@ -53,8 +53,8 @@ async function search(indexNames, query) {
                     }
                 }
             });
-    
-            results.push(result.hits.hits);
+
+            results = results.concat(result.hits.hits);
         }
         
         return results;
