@@ -20,7 +20,7 @@ app.listen(PORT, () => {
     console.log(`Started express app on port ${PORT}`);
 });
 
-app.get("/search", async (req, res) => {
+app.get("/api/search", async (req, res) => {
     try {
         let indexNames = [req.query.indexName];
 
@@ -66,7 +66,7 @@ app.get("/search", async (req, res) => {
     }
 });
 
-app.post("/pdf", async (req, res) => {
+app.post("/api/pdf", async (req, res) => {
     try {
         let driveFileID = req.body.driveFileID;
         let pageHits = req.body.pageHits;
@@ -93,12 +93,16 @@ app.post("/pdf", async (req, res) => {
     }
 });
 
-// Serve static frontend app
-// app.use(express.static(path.join(__dirname, "frontend/")));
-// if it doesnt match send index.html
-// app.get("*", (req, res) => {
-//     res.sendFile(path.join(__dirname + "/frontend/index.html"));
-// });
+if (process.env.LOCAL) {
+    // Serve static frontend app
+    app.use(express.static(path.join(__dirname, "frontend/")));
+
+    // if it doesnt match send index.html
+    app.get("/", (req, res) => {
+        res.sendFile(path.join(__dirname + "/frontend/index.html"));
+    });
+}
+
 
 // let millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000
 // setInterval(driveUtils.indexFromDrive, millisecondsPerWeek);

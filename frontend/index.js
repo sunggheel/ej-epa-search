@@ -1,3 +1,8 @@
+const isProduction = window.location.hostname !== "localhost";
+const protocol = isProduction ? "https://" : "http://";
+const baseUrl = protocol + window.location.host;
+const apiUrl = `${baseUrl}/api`;
+
 let searchQuery = "";
 let searchResults = [];
 let collectionSelector = "all-collections";
@@ -11,7 +16,7 @@ const performSearch = async () => {
     document.getElementById("searchResults").innerHTML = "<div class='spinner-border text-center' role='status'></div>";
     
     try {
-        let response = await fetch(`http://localhost:5000/search?query=${searchQuery}`);
+        let response = await fetch(`${apiUrl}/search?query=${searchQuery}`);
         searchResults = await response.json();
     } catch (error) {
         console.error("couldnt fetch search results");
@@ -177,7 +182,7 @@ const showPDFModal = async (driveFileID, pageHits) => {
         body: JSON.stringify({driveFileID, pageHits})
     }
 
-    let response = await fetch(`http://localhost:5000/pdf`, requestOptions);
+    let response = await fetch(`${apiUrl}/pdf`, requestOptions);
     let data = await response.arrayBuffer();
 
     let pdfBytes = data;
@@ -246,7 +251,7 @@ const showPDFModal = async (driveFileID, pageHits) => {
 }
 
 // const downloadPDF = async (pdfFileName) => {
-//     let response = await fetch(`http://localhost:5000/pdf?pdfFileName=${pdfFileName}`);
+//     let response = await fetch(`${apiUrl}/pdf?pdfFileName=${pdfFileName}`);
 //     let blobData = await response.blob();
 
 //     if (!blobData) return;
