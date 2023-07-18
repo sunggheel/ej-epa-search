@@ -50,15 +50,15 @@ const displaySearchResults = () => {
     let dropdownMenu = document.createElement("div");
     dropdownMenu.classList.add("dropdown-menu");
 
-    let sortByOccurrencesASCButton = document.createElement("button");
-    sortByOccurrencesASCButton.classList.add("dropdown-item");
-    sortByOccurrencesASCButton.innerHTML = "Search word occurrences ASC";
-    sortByOccurrencesASCButton.onclick = () => {sortResultsByOccurrences(SORT_DIRECTIONS.ASCENDING)}
+    let sortByHitsASCButton = document.createElement("button");
+    sortByHitsASCButton.classList.add("dropdown-item");
+    sortByHitsASCButton.innerHTML = "Keyword hits ASC";
+    sortByHitsASCButton.onclick = () => {sortResultsByHits(SORT_DIRECTIONS.ASCENDING)}
 
-    let sortByOccurrencesDESCButton = document.createElement("button");
-    sortByOccurrencesDESCButton.classList.add("dropdown-item");
-    sortByOccurrencesDESCButton.innerHTML = "Search word occurrences DESC";
-    sortByOccurrencesDESCButton.onclick = () => {sortResultsByOccurrences(SORT_DIRECTIONS.DESCENDING)}
+    let sortByHitsDESCButton = document.createElement("button");
+    sortByHitsDESCButton.classList.add("dropdown-item");
+    sortByHitsDESCButton.innerHTML = "Keyword hits DESC";
+    sortByHitsDESCButton.onclick = () => {sortResultsByHits(SORT_DIRECTIONS.DESCENDING)}
 
     let sortByDateASCButton = document.createElement("button");
     sortByDateASCButton.classList.add("dropdown-item");
@@ -70,8 +70,8 @@ const displaySearchResults = () => {
     sortByDateDESCButton.innerHTML = "Document date DESC";
     sortByDateDESCButton.onclick = () => {sortResultsByDate(SORT_DIRECTIONS.DESCENDING)}
 
-    dropdownMenu.appendChild(sortByOccurrencesASCButton);
-    dropdownMenu.appendChild(sortByOccurrencesDESCButton);
+    dropdownMenu.appendChild(sortByHitsASCButton);
+    dropdownMenu.appendChild(sortByHitsDESCButton);
     dropdownMenu.appendChild(sortByDateASCButton);
     dropdownMenu.appendChild(sortByDateDESCButton);
 
@@ -108,9 +108,9 @@ const displaySearchResults = () => {
         buttonGroup.appendChild(viewHitsButton);
         buttonGroup.appendChild(viewPDFButton);
 
-        let occurrencesText = document.createElement("p");
-        occurrencesText.classList.add("mb-1");
-        occurrencesText.innerHTML = `Total search word occurrences: ${result.occurrences}`;
+        let hitsText = document.createElement("p");
+        hitsText.classList.add("mb-1");
+        hitsText.innerHTML = `Total search word hits: ${result.hits}`;
 
         let dateText = document.createElement("p");
         dateText.classList.add("mb-1");
@@ -125,7 +125,7 @@ const displaySearchResults = () => {
 
         listItem.appendChild(resultTitle);
         listItem.appendChild(buttonGroup);
-        listItem.appendChild(occurrencesText);
+        listItem.appendChild(hitsText);
         listItem.appendChild(dateText);
         listItem.appendChild(resultText);
 
@@ -139,9 +139,9 @@ const displaySearchResults = () => {
     instance.mark(searchQuery, {separateWordSearch: false});
 }
 
-const sortResultsByOccurrences = (direction) => {
+const sortResultsByHits = (direction) => {
     searchResults.sort((a,b) => {
-        return direction * (a.occurrences - b.occurrences);
+        return direction * (a.hits - b.hits);
     });
 
     displaySearchResults();
@@ -150,8 +150,8 @@ const sortResultsByOccurrences = (direction) => {
 const sortResultsByDate = (direction) => {
     searchResults.sort((a,b) => {
         // [MM, DD, YYYY]
-        let aDateArray = a._source.date.split("/").map(a => parseInt(a));
-        let bDateArray = b._source.date.split("/").map(a => parseInt(a));
+        let aDateArray = a._source.date.split("/");
+        let bDateArray = b._source.date.split("/");
         
         if (aDateArray.length !== 3) {
             console.error(`Incorrect date format: ${a._source.name}`);
@@ -165,6 +165,12 @@ const sortResultsByDate = (direction) => {
         // format is [MM, DD, YYYY]
         // start comparing from YYYY, then MM, then DD
         for (let i of [2,0,1]) {
+            if (aDateArray[i] === bDateArray[i]) continue;
+
+            // if mystery date, treat it as the oldest
+            if (aDateArray[i].includes("?")) return direction;
+            if (bDateArray[i].includes("?")) return -direction;
+
             if (aDateArray[i] !== bDateArray[i]) return direction * (aDateArray[i] - bDateArray[i]);
         }
 

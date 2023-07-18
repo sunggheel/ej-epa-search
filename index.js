@@ -30,14 +30,12 @@ app.get("/api/search", async (req, res) => {
                 process.env.EPA_BUDGET_JUSTIFICATIONS_INDEX_NAME
             ];
         }
-
-        console.log(collectionNames)
         
         let searchQuery = req.query.query;
 
         let response = await elasticUtils.search(collectionNames, searchQuery);
 
-        const countOccurrences = (mainString, searchString) => {
+        const countHits = (mainString, searchString) => {
             return mainString.toLowerCase().split(searchString.toLowerCase()).length - 1;
         }
 
@@ -48,7 +46,7 @@ app.get("/api/search", async (req, res) => {
         // add number of occurences of search query
         response.forEach((item) => {
             item.pageHits = [];
-            item.occurrences = 0;
+            item.hits = 0;
 
             for (let i = 0; i < item._source.content.length; i++) {
                 let pageContent = item._source.content[i];
@@ -57,8 +55,12 @@ app.get("/api/search", async (req, res) => {
                 if (pageHit(pageContent, searchQuery)) item.pageHits.push(i);
 
                 // add occurrence count
-                item.occurrences += countOccurrences(pageContent, searchQuery);
+                item.hits += countHits(pageContent, searchQuery);
             }
+        });
+
+        response.sort((a, b) => {
+            return -(a.hits - b.occurences);
         });
         
         return res.status(200).json(response);

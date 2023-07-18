@@ -131,14 +131,14 @@ async function indexDocument(collectionName, pdfFileName, driveFileID, arr, docu
                 continue;
             }
 
-            let pageText = content.items[0].str.toLowerCase();
+            let pageText = content.items[0].str;
 
             for (let j = 1; j < content.items.length; j++) {
                 let currentY = content.items[j].transform[5];
                 let previousY = content.items[j-1].transform[5];
                 if (currentY != previousY) pageText += '\n';
 
-                pageText += content.items[j].str.toLowerCase();
+                pageText += content.items[j].str;
             }
 
             documentContent.push(pageText);

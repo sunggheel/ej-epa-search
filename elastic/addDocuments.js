@@ -9,16 +9,16 @@ const PDFJS = require('pdfjs-dist');
 
 const { Client } = require('@elastic/elasticsearch');
 
-const client = new Client({
-    node: process.env.ELASTIC_URL,
-    auth: {
-        username: process.env.ELASTIC_USERNAME,
-        password: process.env.ELASTIC_PASSWORD
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+// const client = new Client({
+//     node: process.env.ELASTIC_URL,
+//     auth: {
+//         username: process.env.ELASTIC_USERNAME,
+//         password: process.env.ELASTIC_PASSWORD
+//     },
+//     tls: {
+//         rejectUnauthorized: false
+//     }
+// });
 
 let datesJSONString = fs.readFileSync("pdfs/nejac-minutes-dates.json");
 let datesObj = JSON.parse(datesJSONString);
@@ -52,19 +52,20 @@ const add = async (collectionName, pdfFileName) => {
             }
 
             try {
-                let  = await client.index({
-                    index: collectionName,
-                    id: CryptoJS.SHA256(pdfFileName).toString(),
-                    body: {
-                        name: pdfFileName,
-                        content: documentContent,
-                        date: datesObj[pdfFileName]
-                    }
-                });
+                // let  = await client.index({
+                //     index: collectionName,
+                //     id: CryptoJS.SHA256(pdfFileName).toString(),
+                //     body: {
+                //         name: pdfFileName,
+                //         content: documentContent,
+                //         date: datesObj[pdfFileName]
+                //     }
+                // });
         
-                await client.indices.refresh({
-                    index: collectionName
-                });
+                // await client.indices.refresh({
+                //     index: collectionName
+                // });
+                console.log(documentContent);
             } catch (error) {
                 console.log(error)
             }
@@ -79,29 +80,29 @@ const add = async (collectionName, pdfFileName) => {
 }
 
 async function addAll(collectionName) {
-    let result = await client.search({
-        index: collectionName,
-        body: {
-            size: 100,
-            query: {
-                match_all: {}
-            }
-        }
-    });
+    // let result = await client.search({
+    //     index: collectionName,
+    //     body: {
+    //         size: 100,
+    //         query: {
+    //             match_all: {}
+    //         }
+    //     }
+    // });
 
     let indexedDocuments = new Set();
-    for (let i = 0; i < result.hits.hits.length; i++) {
-        indexedDocuments.add(result.hits.hits[i]._source.name);
-    }
+    // for (let i = 0; i < result.hits.hits.length; i++) {
+    //     indexedDocuments.add(result.hits.hits[i]._source.name);
+    // }
     
     let pdfDocuments = fs.readdirSync(`pdfs/${collectionName}`);
     pdfDocuments.sort();
     
     for (let pdfFileName of pdfDocuments) {
-        if (!datesObj.hasOwnProperty(pdfFileName)) {
-            console.log(`document has no date: ${pdfFileName}`)
-            continue;
-        }
+        // if (!datesObj.hasOwnProperty(pdfFileName)) {
+        //     console.log(`document has no date: ${pdfFileName}`)
+        //     continue;
+        // }
 
         if (indexedDocuments.has(pdfFileName)) {
             console.log(`document already indexed: ${pdfFileName}`)
@@ -111,5 +112,7 @@ async function addAll(collectionName) {
         await add(collectionName, pdfFileName);
     }
 }
+
+addAll("epa-budget-justifications");
 
 indexIterator(addAll);
