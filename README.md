@@ -1,4 +1,4 @@
-# search-db
+# epa-search
 A simple website where you can search for declassified EPA related documents.
 
 ### Deployment:
