@@ -20,3 +20,13 @@ mark {
     /* background-image: url("./assets/edgi_bg.jpg"); */
     width: 100%;
 }
+
+.outer-dropdown {
+    display: flex;
+    justify-content: right;
+    margin-bottom: 5px;
+}
+
+.hover-pointer {
+    cursor: pointer;
+}

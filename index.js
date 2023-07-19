@@ -57,6 +57,8 @@ app.get("/api/search", async (req, res) => {
                 // add occurrence count
                 item.hits += countHits(pageContent, searchQuery);
             }
+
+            item._source.content = null;
         });
 
         response.sort((a, b) => {

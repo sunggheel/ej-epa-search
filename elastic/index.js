@@ -36,28 +36,24 @@ const client = new Client({
 
 async function search(indexNames, query) {
     try {
-        let results = [];
-        for (let indexName of indexNames) {
-            const result = await client.search({
-                index: indexName,
-                body: {
-                    query: {
-                        match_phrase: {
-                            content: query
-                        }
-                    },
-                    highlight: {
-                        fields: {
-                            content: {type: "fvh"}
-                        }
+        const result = await client.search({
+            index: indexNames,
+            body: {
+                size: 1000,
+                query: {
+                    match_phrase: {
+                        content: query
+                    }
+                },
+                highlight: {
+                    fields: {
+                        content: {type: "fvh"}
                     }
                 }
-            });
-
-            results = results.concat(result.hits.hits);
-        }
+            }
+        });
         
-        return results;
+        return result.hits.hits;
     } catch (error) {
         
     }

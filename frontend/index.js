@@ -7,7 +7,12 @@ let searchQuery = "";
 let searchResults = [];
 let collectionName = "all-collections";
 
+let resultsPerPage = 5;
+let currentPage = null;
+
 const SORT_DIRECTIONS = { ASCENDING: 1, DESCENDING: -1 }
+
+
 
 const performSearch = async () => {
     searchQuery = document.getElementById("searchInput").value;
@@ -16,8 +21,9 @@ const performSearch = async () => {
     document.getElementById("searchResults").innerHTML = "<div class='spinner-border text-center' role='status'></div>";
     
     try {
-        let response = await fetch(`${apiUrl}/search?query=${searchQuery}&collectionName=${collectionName}`);
+        let response = await fetch(`${apiUrl}/search?query=${searchQuery}&collectionName=${collectionName}&page=1`);
         searchResults = await response.json();
+        currentPage = 1;
     } catch (error) {
         console.error("couldnt fetch search results");
         return;
@@ -43,6 +49,8 @@ const displaySearchResults = () => {
     resultList.classList.add("list-group");
 
     // build the sort dropdown
+    let outerDropdownDiv = document.createElement("div");
+    outerDropdownDiv.classList.add("outer-dropdown")
     let dropdownDiv = document.createElement("div");
     dropdownDiv.classList.add("dropdown");
     dropdownDiv.innerHTML = "<button class='btn btn-secondary dropdown-toggle ml-auto' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Sort By</button>";
@@ -77,9 +85,12 @@ const displaySearchResults = () => {
 
     dropdownDiv.appendChild(dropdownMenu);
 
-    searchResultsContainer.appendChild(dropdownDiv);
+    outerDropdownDiv.appendChild(dropdownDiv);
 
-    searchResults.forEach((result) => {
+    searchResultsContainer.appendChild(outerDropdownDiv);
+    let startingIndex = (currentPage-1) * resultsPerPage;
+
+    searchResults.slice(startingIndex, startingIndex+resultsPerPage).forEach((result) => {
         let listItem = document.createElement("li");
         listItem.classList.add("list-group-item", "mb-3", "border", "rounded");
 
@@ -108,6 +119,10 @@ const displaySearchResults = () => {
         buttonGroup.appendChild(viewHitsButton);
         buttonGroup.appendChild(viewPDFButton);
 
+        let collectionText = document.createElement("p");
+        collectionText.classList.add("mb-1");
+        collectionText.innerHTML = `Collection name: ${result._index.replace("-", " ")}`;
+
         let hitsText = document.createElement("p");
         hitsText.classList.add("mb-1");
         hitsText.innerHTML = `Total search word hits: ${result.hits}`;
@@ -119,12 +134,16 @@ const displaySearchResults = () => {
         // highlights text
         let resultText = document.createElement("p");
         resultText.classList.add("mb-1");
-        result.highlight.content.forEach((text) => {
+        result.highlight.content.slice(0,3).forEach((text) => {
             resultText.innerHTML += text.replace(/(<([^>]+)>)/gi, "") + "\n" + "<br><br>"
-        })
+        });
+
+        let markInstance = new Mark(resultText);
+        markInstance.mark(searchQuery, {separateWordSearch: false});
 
         listItem.appendChild(resultTitle);
         listItem.appendChild(buttonGroup);
+        listItem.appendChild(collectionText);
         listItem.appendChild(hitsText);
         listItem.appendChild(dateText);
         listItem.appendChild(resultText);
@@ -132,11 +151,83 @@ const displaySearchResults = () => {
         resultList.appendChild(listItem);
     });
 
+    let paginationNav = document.createElement("nav");
+    let paginationUl = document.createElement("ul");
+    paginationUl.classList.add("pagination");
+    paginationUl.classList.add("justify-content-center")
+    let totalPages = Math.ceil(searchResults.length / resultsPerPage);
+
+    const changePage = (newPage) => {
+        if (1 > newPage && newPage >= totalPages) return;
+
+        currentPage = newPage;
+        displaySearchResults();
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+    
+    let leftArrowLi = document.createElement("li");
+    leftArrowLi.classList.add("page-item");
+    let leftArrowA = document.createElement("a");
+    leftArrowA.classList.add("page-link");
+    leftArrowA.href = "";
+    leftArrowA.innerHTML = `
+        <span aria-hidden="true">&laquo;</span>
+        <span class="sr-only">Previous</span>
+    `
+    leftArrowA.onclick = (event) => {
+        event.preventDefault();
+        changePage(currentPage-1);
+    }
+    leftArrowLi.appendChild(leftArrowA);
+    paginationUl.appendChild(leftArrowLi);
+
+    for (let page = Math.max(1, currentPage-3); page <= Math.min(totalPages, currentPage+3); page++) {
+        let pageLi = document.createElement("li");
+        pageLi.classList.add("page-item");
+        if (page === currentPage) pageLi.classList.add("active");
+
+        let pageA = document.createElement("a");
+        pageA.classList.add("page-link");
+        pageA.href = "";
+        pageA.innerHTML = page;
+        pageA.onclick = (event ) => {
+            event.preventDefault();
+            changePage(page)
+        }
+
+        pageLi.appendChild(pageA);
+
+        paginationUl.appendChild(pageLi);
+    }
+    let rightArrowLi = document.createElement("li");
+    rightArrowLi.classList.add("page-item");
+    let rightArrowA = document.createElement("a");
+    rightArrowA.classList.add("page-link");
+    rightArrowA.href = "";
+    rightArrowA.innerHTML = `
+        <span aria-hidden="true">&raquo;</span>
+        <span class="sr-only">Next</span>
+    `
+    rightArrowA.onclick = (event) => {
+        event.preventDefault();
+        changePage(currentPage+1);
+    }
+    rightArrowLi.appendChild(rightArrowA);
+    paginationUl.appendChild(rightArrowLi);
+
+    let smallPaginationText = document.createElement("p");
+    smallPaginationText.innerHTML = `Page ${currentPage} of ${totalPages}`;
+
+    paginationNav.appendChild(paginationUl);
+    paginationNav.appendChild(smallPaginationText);
+    
+
     searchResultsContainer.appendChild(resultList);
+    searchResultsContainer.appendChild(paginationNav);
 
-
-    let instance = new Mark(resultList);
-    instance.mark(searchQuery, {separateWordSearch: false});
 }
 
 const sortResultsByHits = (direction) => {
