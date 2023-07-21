@@ -43,7 +43,7 @@ app.get("/api/search", async (req, res) => {
             return pageContent.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1;
         }
     
-        // add number of occurences of search query
+        // add number of hits of search query
         response.forEach((item) => {
             item.pageHits = [];
             item.hits = 0;
@@ -54,7 +54,7 @@ app.get("/api/search", async (req, res) => {
                 // add page hits
                 if (pageHit(pageContent, searchQuery)) item.pageHits.push(i);
 
-                // add occurrence count
+                // add hit count
                 item.hits += countHits(pageContent, searchQuery);
             }
 
@@ -62,7 +62,7 @@ app.get("/api/search", async (req, res) => {
         });
 
         response.sort((a, b) => {
-            return -(a.hits - b.occurences);
+            return -(a.hits - b.hits);
         });
         
         return res.status(200).json(response);
