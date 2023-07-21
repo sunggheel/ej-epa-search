@@ -5,14 +5,13 @@ const apiUrl = `${baseUrl}/api`;
 
 let searchQuery = "";
 let searchResults = [];
+
 let collectionName = "all-collections";
 
 let resultsPerPage = 5;
 let currentPage = null;
 
-const SORT_DIRECTIONS = { ASCENDING: 1, DESCENDING: -1 }
-
-
+const SORT_DIRECTIONS = { ASCENDING: 1, DESCENDING: -1 };
 
 const performSearch = async () => {
     searchQuery = document.getElementById("searchInput").value;
@@ -48,9 +47,14 @@ const displaySearchResults = () => {
     let resultList = document.createElement("ul");
     resultList.classList.add("list-group");
 
-    // build the sort dropdown
-    let outerDropdownDiv = document.createElement("div");
-    outerDropdownDiv.classList.add("outer-dropdown")
+    // build the utility bar
+    let outerUtilityDiv = document.createElement("div");
+    outerUtilityDiv.classList.add("utility-dropdown");
+
+    let summaryDiv = document.createElement("div");
+    summaryDiv.classList.add("summary-text")
+    summaryDiv.innerHTML = `${searchResults.length} total results`;
+
     let dropdownDiv = document.createElement("div");
     dropdownDiv.classList.add("dropdown");
     dropdownDiv.innerHTML = "<button class='btn btn-secondary dropdown-toggle ml-auto' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Sort By</button>";
@@ -85,11 +89,40 @@ const displaySearchResults = () => {
 
     dropdownDiv.appendChild(dropdownMenu);
 
-    outerDropdownDiv.appendChild(dropdownDiv);
+    outerUtilityDiv.appendChild(summaryDiv);
+    outerUtilityDiv.appendChild(dropdownDiv);
 
-    searchResultsContainer.appendChild(outerDropdownDiv);
+    // build the decade ranges
+    let decadeRangeDiv = document.createElement("div");
+    decadeRangeDiv.classList.add("summary-text");
+    decadeRangeDiv.innerHTML = "Document years: ";
+
+    let oldestYear = Math.min(
+        ...searchResults
+        .filter(a => a._source.date.split("/")[2] !== "????")
+        .map(a => parseInt(a._source.date.split("/")[2]))
+    );
+    oldestYear = Math.floor(oldestYear / 10) * 10;
+
+    let newestYear = Math.max(
+        ...searchResults
+        .filter(a => a._source.date.split("/")[2] !== "????")
+        .map(a => parseInt(a._source.date.split("/")[2]))
+    );
+    newestYear = Math.ceil(newestYear / 10) * 10;
+
+    for (let year = oldestYear; year < newestYear; year += 10) {
+        let numDocumentsInRange = searchResults
+            .filter(a => a._source.date.split("/")[2] !== "????")
+            .filter(a => year <= a._source.date.split("/")[2])
+            .filter(a => a._source.date.split("/")[2] < year+10)
+            .length;
+
+        decadeRangeDiv.innerHTML += `<b>${year}-${year+10}</b>(${numDocumentsInRange}), `;
+    }
+
+    // build the results list
     let startingIndex = (currentPage-1) * resultsPerPage;
-
     searchResults.slice(startingIndex, startingIndex+resultsPerPage).forEach((result) => {
         let listItem = document.createElement("li");
         listItem.classList.add("list-group-item", "mb-3", "border", "rounded");
@@ -223,11 +256,11 @@ const displaySearchResults = () => {
 
     paginationNav.appendChild(paginationUl);
     paginationNav.appendChild(smallPaginationText);
-    
 
+    searchResultsContainer.appendChild(outerUtilityDiv);
+    searchResultsContainer.appendChild(decadeRangeDiv);
     searchResultsContainer.appendChild(resultList);
     searchResultsContainer.appendChild(paginationNav);
-
 }
 
 const sortResultsByHits = (direction) => {

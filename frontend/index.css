@@ -21,10 +21,14 @@ mark {
     width: 100%;
 }
 
-.outer-dropdown {
+.utility-dropdown {
     display: flex;
-    justify-content: right;
     margin-bottom: 5px;
+}
+
+.summary-text {
+    text-align: start;
+    flex-grow: 1;
 }
 
 .hover-pointer {
