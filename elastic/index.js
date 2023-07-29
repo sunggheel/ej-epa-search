@@ -14,27 +14,34 @@ const client = new Client({
     }
 });
 
-// async function search(query) {
-//     const result = await client.search({
-//         index: process.env.ELASTIC_INDEX_NAME,
-//         body: {
-//             query: {
-//                 match_phrase: {
-//                     "content": query
-//                 }
-//             },
-//             highlight: {
-//                 fields: {
-//                     "content": {},
-//                 }
-//             }
-//         }
-//     });
-
-//     return result.hits.hits;
-// }
-
 async function search(indexNames, query) {
+    let boolQueryObj = {
+        must: query.split(" AND ").map(keyword => ({ match: { content: keyword } }))
+    }
+
+    try {
+        const result = await client.search({
+            index: indexNames,
+            body: {
+                size: 1000,
+                query: {
+                    bool: boolQueryObj
+                },
+                highlight: {
+                    fields: {
+                        content: {type: "fvh"}
+                    }
+                }
+            }
+        });
+        
+        return result.hits.hits;
+    } catch (error) {
+        
+    }
+}
+
+async function search2(indexNames, query) {
     try {
         const result = await client.search({
             index: indexNames,
@@ -47,7 +54,7 @@ async function search(indexNames, query) {
                 },
                 highlight: {
                     fields: {
-                        content: {type: "fvh"}
+                        content: { type: "fvh" }
                     }
                 }
             }

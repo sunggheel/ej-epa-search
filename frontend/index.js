@@ -172,7 +172,9 @@ const displaySearchResults = () => {
         });
 
         let markInstance = new Mark(resultText);
-        markInstance.mark(searchQuery, {separateWordSearch: false});
+        for (let keyword of searchQuery.split(" AND ")) {
+            markInstance.mark(keyword, {separateWordSearch: false});
+        }
 
         listItem.appendChild(resultTitle);
         listItem.appendChild(buttonGroup);
@@ -409,7 +411,7 @@ document.getElementById("searchInput").addEventListener("keydown", (event) => {
     }
 });
 
-["all-collections", "nejac-minutes", "epa-budget-justifications", "collection-3"].forEach((indexName) => {
+["all-collections", "nejac-minutes", "epa-budget-justifications"].forEach((indexName) => {
     let selectorID = `${indexName}-selector`;
     let dropdownSelectorButton = document.getElementById(selectorID);
 

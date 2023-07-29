@@ -35,12 +35,22 @@ app.get("/api/search", async (req, res) => {
 
         let response = await elasticUtils.search(collectionNames, searchQuery);
 
-        const countHits = (mainString, searchString) => {
-            return mainString.toLowerCase().split(searchString.toLowerCase()).length - 1;
+        const searchQueryRegex = (searchQuery) => {
+            const escapedDelimiters = searchQuery.split(" AND ")
+                .map(delimeter => delimeter.toLowerCase())
+                .map(delimiter => delimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            );
+            return new RegExp(escapedDelimiters.join("|"), 'g');
+        }
+
+        const countHits = (mainString, searchQuery) => {
+            const regex = searchQueryRegex(searchQuery);
+            return mainString.toLowerCase().split(regex).length - 1;
         }
 
         const pageHit = (pageContent, searchQuery) => {
-            return pageContent.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1;
+            const regex = searchQueryRegex(searchQuery);
+            return regex.test(pageContent);
         }
     
         // add number of hits of search query
