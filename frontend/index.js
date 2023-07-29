@@ -1,7 +1,6 @@
 const isProduction = window.location.hostname !== "localhost";
-const protocol = isProduction ? "https://" : "http://";
-const baseUrl = protocol + window.location.host;
-const apiUrl = `${baseUrl}/api`;
+const baseUrl = window.location.href;
+const apiUrl = `${baseUrl}api`;
 
 let searchQuery = "";
 let searchResults = [];
@@ -20,7 +19,7 @@ const performSearch = async () => {
     document.getElementById("searchResults").innerHTML = "<div class='spinner-border text-center' role='status'></div>";
     
     try {
-        let response = await fetch(`${apiUrl}/search?query=${searchQuery}&collectionName=${collectionName}&page=1`);
+        let response = await fetch(`${apiUrl}/search?query=${searchQuery}&collectionName=${collectionName}`);
         searchResults = await response.json();
         currentPage = 1;
     } catch (error) {
