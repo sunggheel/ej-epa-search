@@ -21,6 +21,21 @@ If elasticsearch docker container crashes with exit code 78, it might be a memor
 sudo sysctl -w vm.max_map_count=262144
 ```
 
+
+### Restarting the container & server
+If you reboot the machine, you will have to manually restart the elasticsearch container and the express server api.
+Container
+```
+docker start es01
+```
+Express server
+```
+tmux new-session -s api
+cd epa-search
+node index.js
+```
+After starting the express server in a tmux session, you can either exit the terminal, or press CTRL+B then D to exit the tmux session. CAUTION: be careful not to accidently stop the express server when you do this.
+
 ### Adding a new collection:
 Files to change:
 * .env
