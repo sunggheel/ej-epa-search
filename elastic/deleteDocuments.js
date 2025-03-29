@@ -1,3 +1,8 @@
+//
+// To delete all indexed documents
+// Use with caution. After this, you will need to create search index again
+//
+
 const dotenv = require("dotenv")
 dotenv.config();
 

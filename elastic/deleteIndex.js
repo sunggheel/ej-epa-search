@@ -1,3 +1,8 @@
+//
+// To delete all existing index
+// Use with caution
+//
+
 const dotenv = require("dotenv")
 dotenv.config();
 

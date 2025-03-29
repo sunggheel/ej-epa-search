@@ -1,3 +1,7 @@
+//
+// To count the number documents per index
+//
+
 const dotenv = require("dotenv")
 dotenv.config();
 

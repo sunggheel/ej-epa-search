@@ -1,3 +1,7 @@
+//
+// DO NOT USE. Use drive/index.js to add documents in Google folders
+//
+
 const dotenv = require("dotenv");
 dotenv.config();
 

@@ -27,7 +27,9 @@ app.get("/api/search", async (req, res) => {
         if (req.query.collectionName === "all-collections") {
             collectionNames = [
                 process.env.NEJAC_MINUTES_INDEX_NAME,
-                process.env.EPA_BUDGET_JUSTIFICATIONS_INDEX_NAME
+                process.env.EPA_BUDGET_JUSTIFICATIONS_INDEX_NAME,
+                process.env.NEJAC_REPTS_1996_INDEX_NAME,
+                process.env.NEJAC_REPTS_2014_INDEX_NAME 
             ];
         }
         
@@ -119,6 +121,7 @@ if (process.env.LOCAL) {
     });
 }
 
-
+// Setting up the frequency of the elastic indexing, if needed
+// 
 // let millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000
 // setInterval(driveUtils.indexFromDrive, millisecondsPerWeek);

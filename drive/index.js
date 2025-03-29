@@ -39,6 +39,18 @@ async function indexFromDrive() {
         process.env.EPA_BUDGET_JUSTIFICATIONS_SHEET_ID
     );
 
+    await indexCollection(
+        process.env.NEJAC_REPTS_1996_INDEX_NAME,
+        process.env.NEJAC_REPTS_1996_FOLDER_ID,
+        process.env.NEJAC_REPTS_1996_SHEET_ID
+    );
+
+    await indexCollection(
+        process.env.NEJAC_REPTS_2014_INDEX_NAME,
+        process.env.NEJAC_REPTS_2014_FOLDER_ID,
+        process.env.NEJAC_REPTS_2014_SHEET_ID
+    );
+
 }
 
 async function indexCollection(collectionName, folderID, sheetID) {

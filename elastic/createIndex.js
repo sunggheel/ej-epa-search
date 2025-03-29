@@ -1,3 +1,7 @@
+//
+// To create indices after adding a new collection
+//
+
 const dotenv = require("dotenv")
 dotenv.config();
 

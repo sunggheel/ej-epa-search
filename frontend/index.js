@@ -410,7 +410,7 @@ document.getElementById("searchInput").addEventListener("keydown", (event) => {
     }
 });
 
-["all-collections", "nejac-minutes", "epa-budget-justifications"].forEach((indexName) => {
+["all-collections", "nejac-minutes", "epa-budget-justifications", "nejac-repts-1996", "nejac-repts-2014"].forEach((indexName) => {
     let selectorID = `${indexName}-selector`;
     let dropdownSelectorButton = document.getElementById(selectorID);
 

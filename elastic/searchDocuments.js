@@ -1,3 +1,7 @@
+//
+// Test searchDocuments script 
+//
+
 const dotenv = require("dotenv")
 dotenv.config();
 
