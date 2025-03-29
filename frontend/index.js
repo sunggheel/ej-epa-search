@@ -12,6 +12,20 @@ let currentPage = null;
 
 const SORT_DIRECTIONS = { ASCENDING: 1, DESCENDING: -1 };
 
+// Helper function to extract the year from a date string in either "MM/DD/YYYY" or "YYYY-MM-DD" format.
+function extractYear(dateStr) {
+    if (dateStr.includes("/")) {
+      // Format: MM/DD/YYYY
+      const parts = dateStr.split("/");
+      return parts[2];
+    } else if (dateStr.includes("-")) {
+      // Format: YYYY-MM-DD
+      const parts = dateStr.split("-");
+      return parts[0];
+    }
+    return dateStr;
+}
+
 const performSearch = async () => {
     searchQuery = document.getElementById("searchInput").value;
 
@@ -96,26 +110,26 @@ const displaySearchResults = () => {
     decadeRangeDiv.classList.add("summary-text");
     decadeRangeDiv.innerHTML = "Document years: ";
 
+    // Filter out any entries with invalid dates ("????")
+    const validResults = searchResults.filter(a => extractYear(a._source.date) !== "????");
+
+    // Determine the oldest and newest year from the valid dates (rounded to the nearest decade)
     let oldestYear = Math.min(
-        ...searchResults
-        .filter(a => a._source.date.split("/")[2] !== "????")
-        .map(a => parseInt(a._source.date.split("/")[2]))
+        ...validResults.map(a => parseInt(extractYear(a._source.date), 10))
     );
     oldestYear = Math.floor(oldestYear / 10) * 10;
 
     let newestYear = Math.max(
-        ...searchResults
-        .filter(a => a._source.date.split("/")[2] !== "????")
-        .map(a => parseInt(a._source.date.split("/")[2]))
+        ...validResults.map(a => parseInt(extractYear(a._source.date), 10))
     );
     newestYear = Math.ceil(newestYear / 10) * 10;
 
     for (let year = oldestYear; year < newestYear; year += 10) {
-        let numDocumentsInRange = searchResults
-            .filter(a => a._source.date.split("/")[2] !== "????")
-            .filter(a => year <= a._source.date.split("/")[2])
-            .filter(a => a._source.date.split("/")[2] < year+10)
-            .length;
+        // Count documents where the year falls within the current decade range
+        const numDocumentsInRange = validResults.filter(a => {
+            const yearInt = parseInt(extractYear(a._source.date), 10);
+            return yearInt >= year && yearInt < year + 10;
+        }).length;
 
         decadeRangeDiv.innerHTML += `<b>${year}-${year+10}</b>(${numDocumentsInRange}), `;
     }
@@ -305,8 +319,11 @@ const sortResultsByDate = (direction) => {
     displaySearchResults();
 }
 
-const showPDFModal = async (driveFileID, pageHits) => {
+// this function appears not working...
+// need to fix it later
 
+const showPDFModal = async (driveFileID, pageHits) => {
+    
     let requestOptions = {
         method: "POST",
         headers: {"Content-Type": "application/json"},
